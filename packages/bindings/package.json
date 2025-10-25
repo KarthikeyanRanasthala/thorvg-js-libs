@@ -2,5 +2,25 @@
   "name": "bindings",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/bindings.js"
+    }
+  },
+  "module": "./dist/bindings.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:"
+  }
 }

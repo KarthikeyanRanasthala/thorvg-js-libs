@@ -1,6 +1,28 @@
 {
   "name": "react-thorvg-fiber",
   "version": "0.1.0",
-  "private": true,
-  "type": "module"
+  "private": false,
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/react-thorvg-fiber.js"
+    }
+  },
+  "module": "./dist/react-thorvg-fiber.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:"
+  }
 }
