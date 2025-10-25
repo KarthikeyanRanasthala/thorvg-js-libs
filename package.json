@@ -18,9 +18,11 @@
   "packageManager": "pnpm@10.18.3",
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build"
+    "build": "turbo build",
+    "publish-packages": "turbo run build && pnpm publish -r"
   },
   "devDependencies": {
+    "@changesets/cli": "2.29.7",
     "turbo": "2.5.8"
   }
 }
