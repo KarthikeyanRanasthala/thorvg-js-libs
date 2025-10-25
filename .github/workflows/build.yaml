@@ -36,5 +36,8 @@ jobs:
           version: "4.0.17"
           actions-cache-folder: "emsdk-cache"
 
+      - name: Install Meson and Ninja
+        run: pip3 install meson ninja
+
       - name: Build Packages
         run: pnpm build
