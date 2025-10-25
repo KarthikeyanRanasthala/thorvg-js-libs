@@ -4,13 +4,86 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>thorvg-js-libs/bindings</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      #container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        width: 100vw;
+      }
+      #sw-canvas {
+        width: 500px;
+        height: 500px;
+        margin-top: 20px;
+      }
+    </style>
   </head>
   <body>
-    <h1>thorvg-js-libs/bindings</h1>
+    <div id="container">
+      <canvas id="sw-canvas"></canvas>
+    </div>
     <script type="module">
-      import { bindings } from "./src/index.ts";
+      import { loadWasm, Engine, SwCanvas, Shape, TvgColorspace } from "./src";
 
-      console.log(bindings);
+      const canvasElement = document.getElementById("sw-canvas");
+
+      const ctx = await loadWasm();
+
+      const engine = new Engine(ctx);
+      engine.init();
+
+      const canvas = new SwCanvas(ctx);
+      canvas.setTarget(500, 500, TvgColorspace.ARGB8888);
+
+      const rect = new Shape(ctx);
+      rect
+        .appendRect(140, 200, 100, 100)
+        .fill(255, 0, 0, 255)
+        .stroke(0, 0, 0, 255)
+        .strokeWidth(6);
+
+      const circle = new Shape(ctx);
+      circle
+        .appendCircle(310, 250, 50, 50)
+        .fill(0, 128, 255, 255)
+        .stroke(0, 0, 0, 255)
+        .strokeWidth(6);
+
+      canvas.push(rect.handle);
+      canvas.push(circle.handle);
+      canvas.update();
+      canvas.draw();
+      canvas.sync();
+
+      const pixels = new Uint32Array(500 * 500);
+      canvas.readPixels(pixels);
+
+      const imageData = new ImageData(500, 500);
+      const clampedPixels = imageData.data;
+
+      // Convert ARGB8888 format to RGBA8888 format
+      for (let i = 0; i < pixels.length; i++) {
+        const pixel = pixels[i];
+        const offset = i * 4;
+        clampedPixels[offset] = (pixel >> 16) & 0xff; // Red
+        clampedPixels[offset + 1] = (pixel >> 8) & 0xff; // Green
+        clampedPixels[offset + 2] = pixel & 0xff; // Blue
+        clampedPixels[offset + 3] = (pixel >> 24) & 0xff; // Alpha
+      }
+
+      canvasElement.width = 500;
+      canvasElement.height = 500;
+      canvasElement.getContext("2d").putImageData(imageData, 0, 0);
+
+      canvas.destroy();
+      engine.term();
     </script>
   </body>
 </html>
