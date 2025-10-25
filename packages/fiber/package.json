@@ -3,6 +3,14 @@
   "version": "0.0.1",
   "private": false,
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KarthikeyanRanasthala/thorvg-js-libs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KarthikeyanRanasthala/thorvg-js-libs/issues"
+  },
   "publishConfig": {
     "provenance": true,
     "access": "public"
