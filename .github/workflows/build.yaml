@@ -30,21 +30,5 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: "4.0.17"
-          actions-cache-folder: "emsdk-cache"
-
-      - name: Verify Emscripten Setup
-        run: |
-          source $EMSDK/emsdk_env.sh
-          which emcc
-          emcc --version
-          echo "EMSDK=$EMSDK" >> $GITHUB_ENV
-
-      - name: Install Meson and Ninja
-        run: pip3 install meson ninja
-
       - name: Build Packages
         run: pnpm build
