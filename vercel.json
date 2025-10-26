@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm --filter demo build",
+  "outputDirectory": "apps/demo/dist",
+  "installCommand": "pnpm install"
+}
