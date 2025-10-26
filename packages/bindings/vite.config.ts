@@ -10,8 +10,15 @@ export default defineConfig({
     },
     minify: false,
     rollupOptions: {
-      external: (id) =>
-        id.includes("/wasm/thorvg") || id === "path" || id === "url",
+      external: (id) => id.endsWith("/wasm/thorvg.js"),
+      output: {
+        paths: (id) => {
+          if (id.endsWith("/wasm/thorvg.js")) {
+            return "./thorvg-loader.js";
+          }
+          return id;
+        },
+      },
     },
   },
   plugins: [
@@ -21,6 +28,7 @@ export default defineConfig({
     {
       name: "copy-wasm",
       closeBundle() {
+        copyFileSync("wasm/thorvg.js", "dist/thorvg-loader.js");
         copyFileSync("wasm/thorvg.wasm", "dist/thorvg.wasm");
       },
     },
