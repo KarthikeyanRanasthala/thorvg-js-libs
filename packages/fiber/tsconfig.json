@@ -6,7 +6,9 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "noEmit": true,
-    "lib": ["ES2020"]
+    "lib": ["ES2020", "DOM"],
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
   },
   "include": ["src"]
 }

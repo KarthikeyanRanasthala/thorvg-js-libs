@@ -1,18 +1,18 @@
-import { ThorVGAPI, ThorVGContext, type MainModule } from './wasm-loader.js';
+import { ThorVGAPI, ThorVGContext, type MainModule } from "./wasm-loader.js";
 import {
   TvgCanvas,
   TvgPaint,
   TvgColorspace,
   TvgEngineOption,
   TvgResult,
-} from './types.js';
+} from "./types.js";
 
 export class SwCanvas {
   readonly handle: TvgCanvas;
-  private module: MainModule;
-  private api: ThorVGAPI;
-  private bufferPtr: number = 0;
-  private bufferSize: number = 0;
+  readonly module: MainModule;
+  readonly api: ThorVGAPI;
+  bufferPtr: number = 0;
+  bufferSize: number = 0;
 
   constructor(
     context: ThorVGContext,
@@ -23,12 +23,11 @@ export class SwCanvas {
     this.handle = this.api.tvg_swcanvas_create(option);
   }
 
-  setTarget(
-    width: number,
-    height: number,
-    colorspace: TvgColorspace
-  ): void {
+  setTarget(width: number, height: number, colorspace: TvgColorspace): void {
     this.bufferSize = width * height * 4;
+    if (this.bufferPtr !== 0) {
+      this.module._free(this.bufferPtr);
+    }
     this.bufferPtr = this.module._malloc(this.bufferSize);
 
     const result = this.api.tvg_swcanvas_set_target(
@@ -76,13 +75,6 @@ export class SwCanvas {
   sync(): void {
     const result = this.api.tvg_canvas_sync(this.handle);
     if (result !== TvgResult.SUCCESS) throw result;
-  }
-
-  readPixels(buffer: Uint32Array): void {
-    // Read pixel data from WASM memory
-    for (let i = 0; i < buffer.length; i++) {
-      buffer[i] = this.module.getValue(this.bufferPtr + i * 4, 'i32');
-    }
   }
 
   destroy(): void {

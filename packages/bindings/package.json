@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "vite dev",
     "prebuild": "test -f wasm/thorvg.wasm || (./scripts/fetch-source.sh && ./scripts/build-wasm.sh)",
-    "build": "vite build"
+    "build": "tsc && vite build"
   },
   "devDependencies": {
     "typescript": "catalog:",

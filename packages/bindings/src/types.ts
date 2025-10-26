@@ -9,7 +9,7 @@ export enum TvgResult {
 }
 
 export enum TvgColorspace {
-  ARGB8888 = 1,
+  ABGR8888 = 0,
 }
 
 export enum TvgEngineOption {
@@ -32,7 +32,13 @@ export type TvgPaint = number; // Pointer
 // Transformation: x' = e11*x + e12*y + e13
 //                 y' = e21*x + e22*y + e23
 export type TvgMatrix = [
-  number, number, number,
-  number, number, number,
-  number, number, number
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number
 ];
