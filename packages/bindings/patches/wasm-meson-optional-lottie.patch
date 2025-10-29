@@ -1,0 +1,18 @@
+--- a/src/bindings/wasm/meson.build
++++ b/src/bindings/wasm/meson.build
+@@ -1,8 +1,11 @@
+ if cc.get_id() == 'emscripten'
+-    source_file = [
+-      'tvgWasmDefaultFont.h',
+-      'tvgWasmLottieAnimation.cpp'
+-    ]
++    source_file = []
++    if lottie_loader
++        source_file += [
++            'tvgWasmDefaultFont.h',
++            'tvgWasmLottieAnimation.cpp'
++        ]
++    endif
+     thorvg_wasm_dep = declare_dependency(include_directories
+                                          : include_directories('.'), sources
+                                          : source_file)
