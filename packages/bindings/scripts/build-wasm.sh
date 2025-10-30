@@ -49,6 +49,23 @@ if [ ! -d "${SOURCE_DIR}" ]; then
     exit 1
 fi
 
+# Apply patches to ThorVG source
+echo "Applying patches to ThorVG source..."
+PATCH_FILE="patches/wasm-meson-optional-lottie.patch"
+if [ -f "${PATCH_FILE}" ]; then
+    cd "${SOURCE_DIR}"
+    # Check if patch can be applied (returns 0 if successful, non-zero if already applied or failed)
+    if patch -p1 --forward --dry-run < "../../${PATCH_FILE}" > /dev/null 2>&1; then
+        patch -p1 --forward < "../../${PATCH_FILE}"
+        echo "Applied patch: ${PATCH_FILE}"
+    else
+        echo "Patch already applied or cannot be applied: ${PATCH_FILE}"
+    fi
+    cd - > /dev/null
+else
+    echo "Warning: ${PATCH_FILE} not found, skipping patches"
+fi
+
 # Setup Meson build
 BUILD_DIR="${TEMP_DIR}/build"
 OUTPUT_DIR="wasm"
@@ -73,7 +90,7 @@ if [ ! -d "${BUILD_DIR}" ]; then
         -Db_lto=true \
         -Ddefault_library=static \
         -Dstatic=true \
-        -Dloaders="lottie" \
+        -Dloaders="" \
         -Dsavers="" \
         -Dthreads=false \
         -Dbindings="capi,wasm_beta" \

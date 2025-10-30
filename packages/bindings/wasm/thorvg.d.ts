@@ -24,20 +24,6 @@ declare namespace RuntimeExports {
      * @param {string} type
      */
     function setValue(ptr: number, value: number, type?: string): void;
-    /**
-     * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
-     * emscripten HEAP, returns a copy of that string as a Javascript String object.
-     *
-     * @param {number} ptr
-     * @param {number=} maxBytesToRead - An optional length that specifies the
-     *   maximum number of bytes to read. You can omit this parameter to scan the
-     *   string until the first 0 byte. If maxBytesToRead is passed, and the string
-     *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
-     *   string will cut short at that byte index.
-     * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
-     * @return {string}
-     */
-    function UTF8ToString(ptr: number, maxBytesToRead?: number | undefined, ignoreNul?: boolean | undefined): string;
     let HEAPU8: any;
 }
 interface WasmModule {
@@ -45,7 +31,6 @@ interface WasmModule {
   _malloc(_0: number): number;
   _tvg_engine_init(_0: number): number;
   _tvg_engine_term(): number;
-  _tvg_engine_version(_0: number, _1: number, _2: number, _3: number): number;
   _tvg_swcanvas_create(_0: number): number;
   _tvg_canvas_destroy(_0: number): number;
   _tvg_swcanvas_set_target(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number): number;
@@ -71,38 +56,7 @@ interface WasmModule {
   _tvg_scene_remove(_0: number, _1: number): number;
 }
 
-type EmbindString = ArrayBuffer|Uint8Array|Uint8ClampedArray|Int8Array|string;
-export interface ClassHandle {
-  isAliasOf(other: ClassHandle): boolean;
-  delete(): void;
-  deleteLater(): this;
-  isDeleted(): boolean;
-  // @ts-ignore - If targeting lower than ESNext, this symbol might not exist.
-  [Symbol.dispose](): void;
-  clone(): this;
-}
-export interface TvgLottieAnimation extends ClassHandle {
-  size(): Float32Array;
-  render(): ArrayBuffer;
-  update(): boolean;
-  quality(_0: number): boolean;
-  resize(_0: number, _1: number): void;
-  duration(): number;
-  totalFrame(): number;
-  curFrame(): number;
-  frame(_0: number): boolean;
-  viewport(_0: number, _1: number, _2: number, _3: number): boolean;
-  error(): string;
-  load(_0: EmbindString, _1: EmbindString, _2: number, _3: number): boolean;
-  save(_0: EmbindString, _1: EmbindString): boolean;
-}
-
 interface EmbindModule {
-  TvgLottieAnimation: {
-    new(_0: EmbindString, _1: EmbindString): TvgLottieAnimation;
-  };
-  term(): void;
-  init(): number;
 }
 
 export type MainModule = WasmModule & typeof RuntimeExports & EmbindModule;
