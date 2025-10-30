@@ -1,21 +1,22 @@
-import { ThorVGAPI, ThorVGContext } from "./wasm-loader.js";
+import { ThorVGContext, type MainModule } from "./wasm-loader.js";
 import { TvgResult } from "./types.js";
+import { checkResult } from "./utils.js";
 
 export class Engine {
-  private api: ThorVGAPI;
+  private module: MainModule;
 
   constructor(context: ThorVGContext) {
-    this.api = context.api;
+    this.module = context.module;
   }
 
-  init(threads: number = 0): void {
+  init(): void {
     // Note: threads has no effect in WASM (build uses -Dthreads=false)
-    const result = this.api.tvg_engine_init(threads);
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_engine_init(0);
+    checkResult(result);
   }
 
   term(): void {
-    const result = this.api.tvg_engine_term();
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_engine_term();
+    checkResult(result);
   }
 }

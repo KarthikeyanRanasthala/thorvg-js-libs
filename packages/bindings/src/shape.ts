@@ -1,16 +1,17 @@
 import { ThorVGContext } from './wasm-loader.js';
 import { TvgResult } from './types.js';
 import { Paint } from './paint.js';
+import { checkResult } from './utils.js';
 
 export class Shape extends Paint {
   constructor(context: ThorVGContext) {
-    const handle = context.api.tvg_shape_new();
+    const handle = context.module._tvg_shape_new();
     super(context, handle);
   }
 
   reset(): this {
-    const result = this.api.tvg_shape_reset(this.handle);
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_shape_reset(this.handle);
+    checkResult(result);
     return this;
   }
 
@@ -22,7 +23,7 @@ export class Shape extends Paint {
     rx = 0,
     ry = 0
   ): this {
-    const result = this.api.tvg_shape_append_rect(
+    const result = this.module._tvg_shape_append_rect(
       this.handle,
       x,
       y,
@@ -32,12 +33,12 @@ export class Shape extends Paint {
       ry,
       1
     );
-    if (result !== TvgResult.SUCCESS) throw result;
+    checkResult(result);
     return this;
   }
 
   appendCircle(cx: number, cy: number, rx: number, ry: number): this {
-    const result = this.api.tvg_shape_append_circle(
+    const result = this.module._tvg_shape_append_circle(
       this.handle,
       cx,
       cy,
@@ -45,25 +46,25 @@ export class Shape extends Paint {
       ry,
       1
     );
-    if (result !== TvgResult.SUCCESS) throw result;
+    checkResult(result);
     return this;
   }
 
   fill(r = 0, g = 0, b = 0, a = 255): this {
-    const result = this.api.tvg_shape_set_fill_color(this.handle, r, g, b, a);
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_shape_set_fill_color(this.handle, r, g, b, a);
+    checkResult(result);
     return this;
   }
 
   stroke(r = 0, g = 0, b = 0, a = 255): this {
-    const result = this.api.tvg_shape_set_stroke_color(this.handle, r, g, b, a);
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_shape_set_stroke_color(this.handle, r, g, b, a);
+    checkResult(result);
     return this;
   }
 
   strokeWidth(width: number): this {
-    const result = this.api.tvg_shape_set_stroke_width(this.handle, width);
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_shape_set_stroke_width(this.handle, width);
+    checkResult(result);
     return this;
   }
 }
