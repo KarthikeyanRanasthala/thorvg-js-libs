@@ -35,11 +35,11 @@ export const hostConfig: HostConfig<
 
     if (type === "group") {
       const scene = new Scene(containerInfo.ctx);
-      applyProps({ paint: scene.handle, scene, type, props });
+      applyProps({ scene, type, props });
       return { paint: scene.handle, scene, type };
     } else {
       const shape = new Shape(containerInfo.ctx);
-      applyProps({ paint: shape.handle, shape, type, props });
+      applyProps({ shape, type, props });
       return { paint: shape.handle, shape, type };
     }
   },
@@ -185,7 +185,6 @@ export const hostConfig: HostConfig<
     logger.log("commitUpdate", type);
 
     applyProps({
-      paint: instance.paint,
       shape: instance.shape,
       scene: instance.scene,
       type,

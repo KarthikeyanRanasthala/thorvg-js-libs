@@ -1,5 +1,13 @@
-import { Shape, Scene, TvgPaint } from "bindings";
-import { Props, Type, RectProps, CircleProps, GroupProps } from "./types";
+import { Shape, Scene } from "bindings";
+import {
+  Props,
+  Type,
+  RectProps,
+  CircleProps,
+  GroupProps,
+  CircleWithRadius,
+  EllipseWithRadii,
+} from "./types";
 import { RESERVED_PROPS, STYLE_PROPS } from "./constants";
 import { buildTransformMatrix } from "./matrix";
 
@@ -24,104 +32,111 @@ export const diffProps = (
   return diffExists ? changedProps : null;
 };
 
+const DEFAULT_OPACITY = 255;
+const DEFAULT_SCALE = 1;
+const DEFAULT_ROTATION = 0;
+const DEFAULT_POSITION = 0;
+const DEFAULT_STROKE_WIDTH = 0;
+
 export const applyProps = ({
-  paint,
   shape,
   scene,
   type,
   props,
 }: {
-  paint: TvgPaint;
   shape?: Shape;
   scene?: Scene;
   type: Type;
   props: Props;
 }) => {
-  if (type === "group") {
+  if (type === "group" && scene) {
     const groupProps = props as GroupProps;
 
-    if (scene) {
-      // Build transform matrix from props
-      const matrix = buildTransformMatrix(
-        groupProps.x ?? 0,
-        groupProps.y ?? 0,
-        groupProps.rotation ?? 0,
-        groupProps.scale ?? 1,
-        groupProps.scale ?? 1 // Use same scale for both X and Y
-      );
+    // Build transform matrix from props
+    const matrix = buildTransformMatrix(
+      groupProps.x ?? DEFAULT_POSITION,
+      groupProps.y ?? DEFAULT_POSITION,
+      groupProps.rotation ?? DEFAULT_ROTATION,
+      groupProps.scaleX ?? DEFAULT_SCALE,
+      groupProps.scaleY ?? DEFAULT_SCALE
+    );
 
-      scene.setTransform(matrix);
+    scene.setTransform(matrix);
 
-      if (groupProps.opacity !== undefined) {
-        scene.opacity(groupProps.opacity);
-      }
+    if (Object.hasOwn(groupProps, "opacity")) {
+      scene.opacity(groupProps.opacity ?? DEFAULT_OPACITY);
     }
-  } else {
-    // Handle shapes (rect, circle)
-    if (shape) {
-      if (Object.keys(props).some((key) => !STYLE_PROPS.has(key))) {
-        shape.reset();
-      }
 
-      if (type === "rect") {
-        const rectProps = props as RectProps;
-        shape.appendRect(
-          rectProps.x,
-          rectProps.y,
-          rectProps.width,
-          rectProps.height
-        );
-      }
+    return;
+  }
+  // Handle shapes (rect, circle)
+  if (shape) {
+    if (Object.keys(props).some((key) => !STYLE_PROPS.has(key))) {
+      shape.reset();
+    }
 
-      if (type === "circle") {
-        const circleProps = props as CircleProps;
-        shape.appendCircle(
-          circleProps.cx,
-          circleProps.cy,
-          circleProps.rx,
-          circleProps.ry
-        );
-      }
+    if (type === "rect") {
+      const rectProps = props as RectProps;
 
-      const shapeProps = props as RectProps | CircleProps;
+      shape.appendRect(
+        -rectProps.width / 2,
+        -rectProps.height / 2,
+        rectProps.width,
+        rectProps.height
+      );
+    }
 
-      if (shapeProps.fill) {
-        shape.fill(
-          shapeProps.fill[0],
-          shapeProps.fill[1],
-          shapeProps.fill[2],
-          shapeProps.fill[3]
-        );
-      }
+    if (type === "circle") {
+      const circleProps = props as CircleProps;
 
-      if (shapeProps.stroke) {
-        shape.stroke(
-          shapeProps.stroke[0],
-          shapeProps.stroke[1],
-          shapeProps.stroke[2],
-          shapeProps.stroke[3]
-        );
-      }
+      const rx =
+        (circleProps as CircleWithRadius).radius ??
+        (circleProps as EllipseWithRadii).rx ??
+        0;
+      const ry =
+        (circleProps as CircleWithRadius).radius ??
+        (circleProps as EllipseWithRadii).ry ??
+        0;
 
-      if (shapeProps.strokeWidth) {
-        shape.strokeWidth(shapeProps.strokeWidth);
-      }
+      shape.appendCircle(0, 0, rx, ry);
+    }
 
-      // Apply transform properties to shapes
-      if (shapeProps.rotation !== undefined || shapeProps.scale !== undefined) {
-        const matrix = buildTransformMatrix(
-          0, // x translation (shapes use their own x/y for geometry)
-          0, // y translation
-          shapeProps.rotation ?? 0,
-          shapeProps.scale ?? 1,
-          shapeProps.scale ?? 1
-        );
-        shape.setTransform(matrix);
-      }
+    const shapeProps = props as RectProps | CircleProps;
 
-      if (shapeProps.opacity !== undefined) {
-        shape.opacity(shapeProps.opacity);
-      }
+    if (shapeProps.fill) {
+      shape.fill(
+        shapeProps.fill[0],
+        shapeProps.fill[1],
+        shapeProps.fill[2],
+        shapeProps.fill[3]
+      );
+    }
+
+    if (shapeProps.stroke) {
+      shape.stroke(
+        shapeProps.stroke[0],
+        shapeProps.stroke[1],
+        shapeProps.stroke[2],
+        shapeProps.stroke[3]
+      );
+    }
+
+    if (Object.hasOwn(shapeProps, "strokeWidth")) {
+      shape.strokeWidth(shapeProps.strokeWidth ?? DEFAULT_STROKE_WIDTH);
+    }
+
+    // Always apply transform matrix for all transform properties
+    const matrix = buildTransformMatrix(
+      shapeProps.x ?? DEFAULT_POSITION,
+      shapeProps.y ?? DEFAULT_POSITION,
+      shapeProps.rotation ?? DEFAULT_ROTATION,
+      shapeProps.scaleX ?? DEFAULT_SCALE,
+      shapeProps.scaleY ?? DEFAULT_SCALE
+    );
+    shape.setTransform(matrix);
+
+    if (Object.hasOwn(shapeProps, "opacity")) {
+      shape.opacity(shapeProps.opacity ?? DEFAULT_OPACITY);
     }
   }
 };

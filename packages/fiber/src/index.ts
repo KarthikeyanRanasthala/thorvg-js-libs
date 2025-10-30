@@ -11,5 +11,6 @@ export type {
   CircleProps,
   GroupProps,
   Color,
+  TransformProps,
   BaseShapeProps,
 } from "./types";

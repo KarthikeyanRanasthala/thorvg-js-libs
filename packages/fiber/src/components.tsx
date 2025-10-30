@@ -112,15 +112,13 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
     }
   }, [children]);
 
-  return (
-    <canvas ref={canvasElementRef} {...props} />
-  );
+  return <canvas ref={canvasElementRef} {...props} />;
 };
 
 export const Rect: FC<RectProps> = (props) => createElement("rect", props);
 
 export const Circle: FC<CircleProps> = (props) =>
-  createElement("circle", props);
+  createElement("circle", props as Partial<CircleProps>);
 
 export const Group: FC<PropsWithChildren<GroupProps>> = (props) =>
   createElement("group", props);

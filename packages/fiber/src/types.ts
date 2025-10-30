@@ -23,34 +23,38 @@ export interface HostContext {}
 
 export type Color = [number, number, number, number];
 
-export interface BaseShapeProps {
+export interface TransformProps {
+  x?: number;
+  y?: number;
+  rotation?: number;
+  scaleX?: number;
+  scaleY?: number;
+}
+
+export interface BaseShapeProps extends TransformProps {
   fill?: Color;
   stroke?: Color;
   strokeWidth?: number;
-  rotation?: number;
-  scale?: number;
   opacity?: number;
 }
 
 export interface RectProps extends BaseShapeProps {
-  x: number;
-  y: number;
   width: number;
   height: number;
 }
 
-export interface CircleProps extends BaseShapeProps {
-  cx: number;
-  cy: number;
+export interface CircleWithRadius extends BaseShapeProps {
+  radius: number;
+}
+
+export interface EllipseWithRadii extends BaseShapeProps {
   rx: number;
   ry: number;
 }
 
-export interface GroupProps {
-  x?: number;
-  y?: number;
-  rotation?: number;
-  scale?: number;
+export type CircleProps = CircleWithRadius | EllipseWithRadii;
+
+export interface GroupProps extends TransformProps {
   opacity?: number;
 }
 
