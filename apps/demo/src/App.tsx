@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { gsap } from "gsap";
 
-import { Canvas, Group, Rect } from "react-thorvg-fiber";
+import { Canvas, Rect } from "react-thorvg-fiber";
 import wasmUrl from "react-thorvg-fiber/thorvg.wasm?url";
 
 // Helper function to convert HSL to RGB
@@ -105,20 +105,15 @@ function App() {
           wasmPath={wasmUrl}
         >
           {shapeData.map((shape) => (
-            <Group
+            <Rect
               key={shape.key}
               x={shape.cx}
               y={shape.cy}
+              width={SHAPE_SIZE}
+              height={SHAPE_SIZE}
               rotation={rotation}
-            >
-              <Rect
-                x={-SHAPE_SIZE / 2}
-                y={-SHAPE_SIZE / 2}
-                width={SHAPE_SIZE}
-                height={SHAPE_SIZE}
-                fill={shape.color}
-              />
-            </Group>
+              fill={shape.color}
+            />
           ))}
         </Canvas>
       </div>
