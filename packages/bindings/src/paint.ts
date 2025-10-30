@@ -1,5 +1,6 @@
-import { ThorVGAPI, ThorVGContext, type MainModule } from './wasm-loader.js';
-import { TvgPaint, TvgResult, TvgMatrix } from './types.js';
+import { ThorVGContext, type MainModule } from "./wasm-loader.js";
+import { TvgPaint, TvgMatrix } from "./types.js";
+import { checkResult } from "./utils.js";
 
 /**
  * Base class for all drawable objects (Shape, Scene, etc.)
@@ -7,11 +8,9 @@ import { TvgPaint, TvgResult, TvgMatrix } from './types.js';
  */
 export abstract class Paint {
   readonly handle: TvgPaint;
-  protected api: ThorVGAPI;
   protected module: MainModule;
 
   constructor(context: ThorVGContext, handle: TvgPaint) {
-    this.api = context.api;
     this.module = context.module;
     this.handle = handle;
   }
@@ -25,13 +24,14 @@ export abstract class Paint {
     const matrixPtr = this.module._malloc(36);
 
     try {
-      // Write matrix values to WASM memory
-      for (let i = 0; i < 9; i++) {
-        this.module.setValue(matrixPtr + i * 4, matrix[i], 'float');
-      }
+      // Write matrix values to WASM memory using bulk write
+      this.module.HEAPF32.set(matrix, matrixPtr / 4);
 
-      const result = this.api.tvg_paint_set_transform(this.handle, matrixPtr);
-      if (result !== TvgResult.SUCCESS) throw result;
+      const result = this.module._tvg_paint_set_transform(
+        this.handle,
+        matrixPtr
+      );
+      checkResult(result);
     } finally {
       this.module._free(matrixPtr);
     }
@@ -46,16 +46,17 @@ export abstract class Paint {
     const matrixPtr = this.module._malloc(36);
 
     try {
-      const result = this.api.tvg_paint_get_transform(this.handle, matrixPtr);
-      if (result !== TvgResult.SUCCESS) throw result;
+      const result = this.module._tvg_paint_get_transform(
+        this.handle,
+        matrixPtr
+      );
+      checkResult(result);
 
-      // Read matrix values from WASM memory
-      const matrix: TvgMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-      for (let i = 0; i < 9; i++) {
-        matrix[i] = this.module.getValue(matrixPtr + i * 4, 'float');
-      }
-
-      return matrix;
+      // Read matrix values from WASM memory using HEAPF32 (bulk read)
+      const offset = matrixPtr / 4;
+      return Array.from(
+        this.module.HEAPF32.subarray(offset, offset + 9)
+      ) as TvgMatrix;
     } finally {
       this.module._free(matrixPtr);
     }
@@ -66,8 +67,8 @@ export abstract class Paint {
    * @param value Opacity value (0-255)
    */
   opacity(value: number): this {
-    const result = this.api.tvg_paint_set_opacity(this.handle, value);
-    if (result !== TvgResult.SUCCESS) throw result;
+    const result = this.module._tvg_paint_set_opacity(this.handle, value);
+    checkResult(result);
     return this;
   }
 }
