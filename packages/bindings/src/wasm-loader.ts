@@ -1,18 +1,19 @@
 import MainModuleFactory, { type MainModule } from "../wasm/thorvg.js";
 
-// Re-export MainModule type
-export type { MainModule };
+export type Module = MainModule & {
+  _tvg_webgl_create_context: (selector: string) => number;
+};
 
 export interface ThorVGContext {
-  module: MainModule;
+  module: Module;
 }
 
 export async function loadWasm({
   wasmPath,
 }: {
   wasmPath?: string;
-}): Promise<ThorVGContext> {
-  const module = await MainModuleFactory({
+} = {}): Promise<ThorVGContext> {
+  const module = (await MainModuleFactory({
     locateFile: (path: string, scriptDirectory: string) => {
       if (wasmPath) {
         return wasmPath;
@@ -20,7 +21,7 @@ export async function loadWasm({
 
       return scriptDirectory + path;
     },
-  });
+  })) as Module;
 
   return { module };
 }

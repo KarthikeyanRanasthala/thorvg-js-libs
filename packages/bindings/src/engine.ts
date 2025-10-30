@@ -1,9 +1,8 @@
-import { ThorVGContext, type MainModule } from "./wasm-loader.js";
-import { TvgResult } from "./types.js";
+import { ThorVGContext, type Module } from "./wasm-loader.js";
 import { checkResult } from "./utils.js";
 
 export class Engine {
-  private module: MainModule;
+  private module: Module;
 
   constructor(context: ThorVGContext) {
     this.module = context.module;

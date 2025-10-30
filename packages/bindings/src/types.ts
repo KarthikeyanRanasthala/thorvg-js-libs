@@ -10,6 +10,9 @@ export enum TvgResult {
 
 export enum TvgColorspace {
   ABGR8888 = 0,
+  ARGB8888 = 1,
+  ABGR8888S = 2,
+  ARGB8888S = 3,
 }
 
 export enum TvgEngineOption {

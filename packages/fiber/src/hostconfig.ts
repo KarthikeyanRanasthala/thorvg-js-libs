@@ -83,27 +83,6 @@ export const hostConfig: HostConfig<
     containerInfo.canvas.update();
     containerInfo.canvas.draw();
     containerInfo.canvas.sync();
-
-    if (containerInfo.htmlCanvas) {
-      /**
-       * Get a zero-copy view of the pixel buffer from WASM memory
-       * This creates a Uint8ClampedArray view directly into WASM memory - no copying!
-       *
-       * Use with ABGR8888 colorspace for direct Canvas ImageData compatibility.
-       * ABGR8888 on little-endian systems = RGBA format expected by Canvas.
-       */
-      const pixelBuffer = new Uint8ClampedArray(
-        containerInfo.ctx.module.HEAPU8.buffer,
-        containerInfo.canvas.bufferPtr,
-        containerInfo.canvas.bufferSize
-      );
-      const imageData = new ImageData(
-        pixelBuffer,
-        containerInfo.htmlCanvas.width,
-        containerInfo.htmlCanvas.height
-      );
-      containerInfo.htmlCanvas.getContext("2d")?.putImageData(imageData, 0, 0);
-    }
   },
   preparePortalMount: () => {
     logger.log("preparePortalMount");

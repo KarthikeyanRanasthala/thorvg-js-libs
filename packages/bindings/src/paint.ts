@@ -1,4 +1,4 @@
-import { ThorVGContext, type MainModule } from "./wasm-loader.js";
+import { ThorVGContext, type Module } from "./wasm-loader.js";
 import { TvgPaint, TvgMatrix } from "./types.js";
 import { checkResult } from "./utils.js";
 
@@ -8,7 +8,7 @@ import { checkResult } from "./utils.js";
  */
 export abstract class Paint {
   readonly handle: TvgPaint;
-  protected module: MainModule;
+  protected module: Module;
 
   constructor(context: ThorVGContext, handle: TvgPaint) {
     this.module = context.module;

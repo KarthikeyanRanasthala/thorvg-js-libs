@@ -31,9 +31,11 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
+const DPR = 2;
+
 // Pre-calculate all static shape data outside component
 const HTML_CANVAS_SIZE = 500;
-const CANVAS_SIZE = HTML_CANVAS_SIZE * window.devicePixelRatio;
+const CANVAS_SIZE = HTML_CANVAS_SIZE * DPR;
 const NUMBER_OF_RECTANGLES = 1000;
 
 // Calculate how many shapes fit per row/col based on desired count
@@ -44,10 +46,10 @@ type ShapeData = {
   key: string;
   x: number;
   y: number;
-  cx: number;
-  cy: number;
   color: [number, number, number, number];
 };
+
+const RADIUS = SHAPE_SIZE / 2;
 
 const shapeData: ShapeData[] = [];
 let shapeCount = 0;
@@ -63,15 +65,13 @@ for (
   ) {
     const hue = (shapeCount * 360) / NUMBER_OF_RECTANGLES;
     const rgb = hslToRgb(hue / 360, 0.7, 0.6);
-    const x = col * SHAPE_SIZE;
-    const y = row * SHAPE_SIZE;
+    const x = col * SHAPE_SIZE + RADIUS;
+    const y = row * SHAPE_SIZE + RADIUS;
 
     shapeData.push({
       key: `${row}-${col}`,
       x,
       y,
-      cx: x + SHAPE_SIZE / 2,
-      cy: y + SHAPE_SIZE / 2,
       color: [...rgb, 255] as [number, number, number, number],
     });
     shapeCount++;
@@ -98,26 +98,32 @@ function App() {
 
   return (
     <>
-      <div>
-        <Canvas
-          width={HTML_CANVAS_SIZE}
-          height={HTML_CANVAS_SIZE}
-          wasmPath={wasmUrl}
-        >
-          {shapeData.map((shape) => (
-            <Rect
-              key={shape.key}
-              x={shape.cx}
-              y={shape.cy}
-              width={SHAPE_SIZE}
-              height={SHAPE_SIZE}
-              rotation={rotation}
-              fill={shape.color}
-            />
-          ))}
-        </Canvas>
-      </div>
       <h1>React + ThorVG</h1>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+        <div>
+          <h2>Software Renderer (Canvas)</h2>
+          <Canvas
+            id="gl-canvas"
+            engine="sw"
+            width={HTML_CANVAS_SIZE}
+            height={HTML_CANVAS_SIZE}
+            wasmPath={wasmUrl}
+            devicePixelRatio={DPR}
+          >
+            {shapeData.map((shape) => (
+              <Rect
+                key={shape.key}
+                x={shape.x}
+                y={shape.y}
+                width={SHAPE_SIZE}
+                height={SHAPE_SIZE}
+                fill={shape.color}
+                rotation={rotation}
+              />
+            ))}
+          </Canvas>
+        </div>
+      </div>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}

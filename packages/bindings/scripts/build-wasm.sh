@@ -95,7 +95,7 @@ if [ ! -d "${BUILD_DIR}" ]; then
         -Dthreads=false \
         -Dbindings="capi,wasm_beta" \
         -Dpartial=false \
-        -Dengines="sw" \
+        -Dengines="sw,gl" \
         -Dfile="false" \
         -Dextra=""
     echo "Meson setup complete"

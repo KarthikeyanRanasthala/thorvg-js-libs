@@ -1,10 +1,4 @@
-export {
-  SwCanvas,
-  SwCanvas as Canvas,
-  Rect,
-  Circle,
-  Group,
-} from "./components";
+export { Canvas, Rect, Circle, Group } from "./components";
 
 export type {
   RectProps,

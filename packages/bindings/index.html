@@ -18,29 +18,54 @@
         height: 100vh;
         width: 100vw;
       }
-      #sw-canvas {
+      #gl-canvas {
         width: 500px;
         height: 500px;
         margin-top: 20px;
+        border: 2px solid #333;
+      }
+      h1 {
+        font-family: system-ui, -apple-system, sans-serif;
+        margin-bottom: 10px;
+      }
+      .info {
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
       }
     </style>
   </head>
   <body>
     <div id="container">
-      <canvas id="sw-canvas"></canvas>
+      <h1>ThorVG WebGL Renderer Demo</h1>
+      <div class="info">Using WebGL2 for hardware-accelerated rendering</div>
+      <canvas id="gl-canvas"></canvas>
     </div>
     <script type="module">
-      import { loadWasm, Engine, SwCanvas, Shape, TvgColorspace } from "./src";
+      import { loadWasm, Engine, GlCanvas, Shape, TvgColorspace } from "./src";
 
-      const canvasElement = document.getElementById("sw-canvas");
+      const canvasElement = document.getElementById("gl-canvas");
+
+      // Check for WebGL2 support
+      if (!canvasElement.getContext("webgl2")) {
+        document.querySelector(".info").textContent =
+          "WebGL2 is not supported in your browser!";
+        throw new Error("WebGL2 not supported");
+      }
+
+      // Set canvas size before creating GL context
+      canvasElement.width = 500;
+      canvasElement.height = 500;
 
       const ctx = await loadWasm({});
 
       const engine = new Engine(ctx);
       engine.init();
 
-      const canvas = new SwCanvas(ctx);
-      canvas.setTarget(500, 500, TvgColorspace.ARGB8888);
+      // Create WebGL canvas - it gets the WebGL2 context internally
+      const canvas = new GlCanvas(ctx, "#gl-canvas");
+      canvas.setTarget(500, 500, TvgColorspace.ABGR8888S);
 
       const rect = new Shape(ctx);
       rect
@@ -62,18 +87,7 @@
       canvas.draw();
       canvas.sync();
 
-      // Access the pixel buffer directly from WASM memory
-      const pixelBuffer = new Uint8ClampedArray(
-        ctx.module.HEAPU8.buffer,
-        canvas.bufferPtr,
-        canvas.bufferSize
-      );
-
-      const imageData = new ImageData(pixelBuffer, 500, 500);
-
-      canvasElement.width = 500;
-      canvasElement.height = 500;
-      canvasElement.getContext("2d").putImageData(imageData, 0, 0);
+      // WebGL renders directly to canvas - no need to copy pixels!
 
       canvas.destroy();
       engine.term();

@@ -3,6 +3,7 @@ import {
   createElement,
   FC,
   PropsWithChildren,
+  useCallback,
   useEffect,
   useRef,
 } from "react";
@@ -12,6 +13,7 @@ import {
   Engine,
   loadWasm,
   SwCanvas as ThorVGSwCanvas,
+  GlCanvas as ThorVGGlCanvas,
   TvgColorspace,
 } from "bindings";
 import { reconciler } from "./reconciler";
@@ -19,59 +21,116 @@ import { logger } from "./logger";
 import { LegacyRoot } from "react-reconciler/constants";
 import { RectProps, CircleProps, GroupProps } from "./types";
 
-interface SwCanvasProps extends ComponentPropsWithoutRef<"canvas"> {
+/**
+ * Helper to flush software canvasElementRef.current pixel buffer to HTML canvasElementRef.current
+ */
+function flushSwCanvasToHtml(
+  swCanvas: ThorVGSwCanvas | null,
+  htmlCanvas: HTMLCanvasElement | null
+): void {
+  if (!htmlCanvas || !swCanvas) return;
+
+  /**
+   * Get a zero-copy view of the pixel buffer from WASM memory
+   * This creates a Uint8ClampedArray view directly into WASM memory - no copying!
+   *
+   * Use with ABGR8888 colorspace for direct Canvas ImageData compatibility.
+   * ABGR8888 on little-endian systems = RGBA format expected by Canvas.
+   */
+  const pixelBuffer = new Uint8ClampedArray(
+    swCanvas.module.HEAPU8.buffer,
+    swCanvas.bufferPtr,
+    swCanvas.bufferSize
+  );
+  const imageData = new ImageData(
+    pixelBuffer,
+    htmlCanvas.width,
+    htmlCanvas.height
+  );
+  htmlCanvas.getContext("2d")?.putImageData(imageData, 0, 0);
+}
+
+type CanvasPropsBase = ComponentPropsWithoutRef<"canvas"> & {
   width: number;
   height: number;
   wasmPath?: string;
-}
+  devicePixelRatio?: number;
+};
 
-export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
+type SwCanvasProps = CanvasPropsBase & {
+  engine: "sw";
+  id?: string;
+};
+
+type GlCanvasProps = CanvasPropsBase & {
+  engine: "gl";
+  id: string;
+};
+
+type CanvasProps = SwCanvasProps | GlCanvasProps;
+
+export const Canvas: FC<PropsWithChildren<CanvasProps>> = ({
   children,
+  engine,
   width,
   height,
   wasmPath,
+  devicePixelRatio,
   ...props
 }) => {
   const canvasElementRef = useRef<HTMLCanvasElement>(null);
   const rootRef = useRef<ReactReconciler.OpaqueRoot>(null);
-  const thorvgCanvasRef = useRef<ThorVGSwCanvas>(null);
+  const thorvgCanvasRef = useRef<ThorVGSwCanvas | ThorVGGlCanvas>(null);
 
   useEffect(() => {
     (async () => {
       try {
         const ctx = await loadWasm({ wasmPath });
 
-        const engine = new Engine(ctx);
-        engine.init();
+        const thorvgEngine = new Engine(ctx);
+        thorvgEngine.init();
+
+        if (!canvasElementRef.current) {
+          throw new Error("Canvas element not found");
+        }
 
         // Get device pixel ratio for high-DPI displays
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = devicePixelRatio ?? 1;
         const scaledWidth = Math.floor(width * dpr);
         const scaledHeight = Math.floor(height * dpr);
 
-        // Set canvas buffer size to account for DPR
-        if (canvasElementRef.current) {
-          canvasElementRef.current.width = scaledWidth;
-          canvasElementRef.current.height = scaledHeight;
-          canvasElementRef.current.style.width = `${width}px`;
-          canvasElementRef.current.style.height = `${height}px`;
+        // Set canvasElementRef.current buffer size to account for DPR
+        canvasElementRef.current.width = scaledWidth;
+        canvasElementRef.current.height = scaledHeight;
+        canvasElementRef.current.style.width = `${width}px`;
+        canvasElementRef.current.style.height = `${height}px`;
+
+        // Create ThorVG canvas based on engine type
+        if (engine === "sw") {
+          const swCanvas = new ThorVGSwCanvas(ctx);
+          swCanvas.setTarget(scaledWidth, scaledHeight, TvgColorspace.ABGR8888);
+          thorvgCanvasRef.current = swCanvas;
+        } else if (engine === "gl") {
+          const glCanvas = new ThorVGGlCanvas(
+            ctx,
+            `#${canvasElementRef.current.id}`
+          );
+          // GL canvas only supports ABGR8888S (straight alpha)
+          glCanvas.setTarget(
+            scaledWidth,
+            scaledHeight,
+            TvgColorspace.ABGR8888S
+          );
+          thorvgCanvasRef.current = glCanvas;
+        } else {
+          throw new Error(`Unsupported engine: ${engine}`);
         }
 
-        thorvgCanvasRef.current = new ThorVGSwCanvas(ctx);
-        thorvgCanvasRef.current.setTarget(
-          scaledWidth,
-          scaledHeight,
-          TvgColorspace.ABGR8888
-        );
-
-        const container = {
-          ctx,
-          canvas: thorvgCanvasRef.current,
-          htmlCanvas: canvasElementRef.current ?? undefined,
-        };
-
         rootRef.current = reconciler.createContainer(
-          container,
+          {
+            ctx,
+            canvas: thorvgCanvasRef.current,
+          },
           LegacyRoot,
           null,
           false,
@@ -85,7 +144,21 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
         );
 
         // Render the children into the reconciler container
-        reconciler.updateContainer(children, rootRef.current, null, () => {});
+        const flushCallback =
+          engine === "sw"
+            ? () =>
+                flushSwCanvasToHtml(
+                  thorvgCanvasRef.current as ThorVGSwCanvas,
+                  canvasElementRef.current
+                )
+            : () => {};
+
+        reconciler.updateContainer(
+          children,
+          rootRef.current,
+          null,
+          flushCallback
+        );
       } catch (error) {
         logger.error(error);
       }
@@ -103,14 +176,32 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
         thorvgCanvasRef.current.destroy();
       }
     };
-  }, []);
+  }, [engine]);
 
   // Update the container when children change
   useEffect(() => {
-    if (rootRef.current) {
-      reconciler.updateContainer(children, rootRef.current, null, () => {});
+    if (
+      rootRef.current &&
+      thorvgCanvasRef.current &&
+      canvasElementRef.current
+    ) {
+      const flushCallback =
+        engine === "sw"
+          ? () =>
+              flushSwCanvasToHtml(
+                thorvgCanvasRef.current as ThorVGSwCanvas,
+                canvasElementRef.current!
+              )
+          : () => {};
+
+      reconciler.updateContainer(
+        children,
+        rootRef.current,
+        null,
+        flushCallback
+      );
     }
-  }, [children]);
+  }, [children, engine]);
 
   return <canvas ref={canvasElementRef} {...props} />;
 };

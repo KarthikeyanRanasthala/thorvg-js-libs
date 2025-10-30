@@ -125,7 +125,6 @@ export const applyProps = ({
       shape.strokeWidth(shapeProps.strokeWidth ?? DEFAULT_STROKE_WIDTH);
     }
 
-    // Always apply transform matrix for all transform properties
     const matrix = buildTransformMatrix(
       shapeProps.x ?? DEFAULT_POSITION,
       shapeProps.y ?? DEFAULT_POSITION,
