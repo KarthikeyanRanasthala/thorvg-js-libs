@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { gsap } from "gsap";
 
-import { Canvas, Rect } from "react-thorvg-fiber";
+import { SwCanvas, Rect } from "react-thorvg-fiber";
 import wasmUrl from "react-thorvg-fiber/thorvg.wasm?url";
 
 // Helper function to convert HSL to RGB
@@ -102,9 +102,7 @@ function App() {
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
         <div>
           <h2>Software Renderer (Canvas)</h2>
-          <Canvas
-            id="gl-canvas"
-            engine="sw"
+          <SwCanvas
             width={HTML_CANVAS_SIZE}
             height={HTML_CANVAS_SIZE}
             wasmPath={wasmUrl}
@@ -121,7 +119,7 @@ function App() {
                 rotation={rotation}
               />
             ))}
-          </Canvas>
+          </SwCanvas>
         </div>
       </div>
       <div className="card">
