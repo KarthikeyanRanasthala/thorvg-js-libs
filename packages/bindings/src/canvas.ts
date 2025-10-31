@@ -1,6 +1,6 @@
-import { type Module } from "./wasm-loader.js";
 import { TvgCanvas, TvgPaint } from "./types.js";
 import { checkResult } from "./utils.js";
+import { AnyThorVGModule } from "./wasm.js";
 
 /**
  * Base class for ThorVG canvas implementations.
@@ -8,9 +8,9 @@ import { checkResult } from "./utils.js";
  */
 export abstract class Canvas {
   protected readonly handle: TvgCanvas;
-  readonly module: Module;
+  readonly module: AnyThorVGModule;
 
-  protected constructor(module: Module, handle: TvgCanvas) {
+  protected constructor(module: AnyThorVGModule, handle: TvgCanvas) {
     this.module = module;
     this.handle = handle;
   }

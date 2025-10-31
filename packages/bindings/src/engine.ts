@@ -1,11 +1,11 @@
-import { ThorVGContext, type Module } from "./wasm-loader.js";
 import { checkResult } from "./utils.js";
+import { AnyThorVGModule } from "./wasm.js";
 
 export class Engine {
-  private module: Module;
+  private module: AnyThorVGModule;
 
-  constructor(context: ThorVGContext) {
-    this.module = context.module;
+  constructor(module: AnyThorVGModule) {
+    this.module = module;
   }
 
   init(): void {

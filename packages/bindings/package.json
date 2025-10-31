@@ -16,7 +16,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite dev",
-    "prebuild": "test -f wasm/thorvg.wasm || (./scripts/fetch-source.sh && ./scripts/build-wasm.sh)",
+    "prebuild": "test -f wasm/thorvg-sw.wasm || (./scripts/fetch-source.sh && ./scripts/build-wasm.sh)",
     "build": "tsc && vite build"
   },
   "devDependencies": {

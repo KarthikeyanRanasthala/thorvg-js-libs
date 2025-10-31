@@ -10,12 +10,22 @@ export default defineConfig({
     },
     minify: false,
     rollupOptions: {
-      external: (id) => id.endsWith("/wasm/thorvg.js"),
+      external: (id) => {
+        return (
+          id.endsWith("/wasm/thorvg-sw.js") ||
+          id.endsWith("/wasm/thorvg-gl.js")
+        );
+      },
       output: {
         paths: (id) => {
-          if (id.endsWith("/wasm/thorvg.js")) {
-            return "./thorvg-loader.js";
+          if (id.endsWith("/wasm/thorvg-sw.js")) {
+            return "./thorvg-sw-loader.js";
           }
+
+          if (id.endsWith("/wasm/thorvg-gl.js")) {
+            return "./thorvg-gl-loader.js";
+          }
+
           return id;
         },
       },
@@ -28,8 +38,10 @@ export default defineConfig({
     {
       name: "copy-wasm",
       closeBundle() {
-        copyFileSync("wasm/thorvg.js", "dist/thorvg-loader.js");
-        copyFileSync("wasm/thorvg.wasm", "dist/thorvg.wasm");
+        copyFileSync("wasm/thorvg-sw.js", "dist/thorvg-sw-loader.js");
+        copyFileSync("wasm/thorvg-sw.wasm", "dist/thorvg-sw.wasm");
+        copyFileSync("wasm/thorvg-gl.js", "dist/thorvg-gl-loader.js");
+        copyFileSync("wasm/thorvg-gl.wasm", "dist/thorvg-gl.wasm");
       },
     },
   ],

@@ -1,16 +1,16 @@
 import {
   Shape,
   Scene,
-  ThorVGContext,
   SwCanvas as ThorVGSwCanvas,
   GlCanvas as ThorVGGlCanvas,
   TvgPaint,
+  AnyThorVGModule,
 } from "bindings";
 
 export type ThorVGCanvas = ThorVGSwCanvas | ThorVGGlCanvas;
 
 export interface Container {
-  ctx: ThorVGContext;
+  module: AnyThorVGModule;
   canvas: ThorVGCanvas;
 }
 
