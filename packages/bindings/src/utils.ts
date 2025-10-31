@@ -5,6 +5,6 @@ import { TvgResult } from "./types.js";
  * @param result - The result code from a ThorVG operation
  * @throws {TvgResult} The error code if the operation failed
  */
-export function checkResult(result: TvgResult): void {
-  if (result !== TvgResult.SUCCESS) throw result;
+export function checkResult(result: number): void {
+  if (result !== TvgResult.SUCCESS) throw result as TvgResult;
 }

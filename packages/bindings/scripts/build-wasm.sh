@@ -66,25 +66,35 @@ else
     echo "Warning: ${PATCH_FILE} not found, skipping patches"
 fi
 
-# Setup Meson build
-BUILD_DIR="${TEMP_DIR}/build"
+# Output directory
 OUTPUT_DIR="wasm"
-
-# Clear existing build directory for a clean build
-if [ -d "${BUILD_DIR}" ]; then
-    echo "Clearing existing build directory at ${BUILD_DIR}..."
-    rm -rf "${BUILD_DIR}"
-fi
 
 # Clear output directory
 if [ -d "${OUTPUT_DIR}" ]; then
     echo "Clearing existing output directory at ${OUTPUT_DIR}..."
     rm -rf "${OUTPUT_DIR}"
 fi
+mkdir -p "${OUTPUT_DIR}"
 
-if [ ! -d "${BUILD_DIR}" ]; then
-    echo "Setting up Meson build..."
-    meson setup "${BUILD_DIR}" "${SOURCE_DIR}" \
+# Function to build for specific engine configuration
+build_engine() {
+    local engine_name=$1
+    local engine_config=$2
+    local build_dir="${TEMP_DIR}/build-${engine_name}"
+
+    echo "========================================="
+    echo "Building ThorVG WASM with engines: ${engine_config}"
+    echo "========================================="
+
+    # Clear existing build directory for this configuration
+    if [ -d "${build_dir}" ]; then
+        echo "Clearing existing build directory at ${build_dir}..."
+        rm -rf "${build_dir}"
+    fi
+
+    # Setup Meson build
+    echo "Setting up Meson build for ${engine_name}..."
+    meson setup "${build_dir}" "${SOURCE_DIR}" \
         --cross-file="${CROSS_FILE_GENERATED}" \
         --buildtype=release \
         -Db_lto=true \
@@ -95,23 +105,30 @@ if [ ! -d "${BUILD_DIR}" ]; then
         -Dthreads=false \
         -Dbindings="capi,wasm_beta" \
         -Dpartial=false \
-        -Dengines="sw,gl" \
+        -Dengines="${engine_config}" \
         -Dfile="false" \
         -Dextra=""
-    echo "Meson setup complete"
-fi
+    echo "Meson setup complete for ${engine_name}"
 
-# Compile ThorVG
-echo "Building ThorVG WASM..."
-ninja -C "${BUILD_DIR}"
+    # Compile ThorVG
+    echo "Building ThorVG WASM for ${engine_name}..."
+    ninja -C "${build_dir}"
 
-# Copy WASM files to output directory
-echo "Copying WASM files to ${OUTPUT_DIR}/"
-mkdir -p "${OUTPUT_DIR}"
-cp "${BUILD_DIR}/src/bindings/wasm/thorvg.js" "${OUTPUT_DIR}/"
-cp "${BUILD_DIR}/src/bindings/wasm/thorvg.wasm" "${OUTPUT_DIR}/"
-cp "${BUILD_DIR}/src/bindings/wasm/thorvg.d.ts" "${OUTPUT_DIR}/" 2>/dev/null || echo "TypeScript definitions not found (expected with --emit-tsd)"
+    # Copy WASM files to output directory with engine-specific names
+    local suffix="-${engine_name}"
 
-echo "Build complete! WASM files are in ${OUTPUT_DIR}/"
+    echo "Copying WASM files for ${engine_name} to ${OUTPUT_DIR}/"
+    cp "${build_dir}/src/bindings/wasm/thorvg.js" "${OUTPUT_DIR}/thorvg${suffix}.js"
+    cp "${build_dir}/src/bindings/wasm/thorvg.wasm" "${OUTPUT_DIR}/thorvg${suffix}.wasm"
+    cp "${build_dir}/src/bindings/wasm/thorvg.d.ts" "${OUTPUT_DIR}/thorvg${suffix}.d.ts" 2>/dev/null || echo "TypeScript definitions not found for ${engine_name} (expected with --emit-tsd)"
+}
+
+# Build both engine configurations
+build_engine "sw" "sw"
+build_engine "gl" "gl"
+
+echo "========================================="
+echo "All builds complete! WASM files are in ${OUTPUT_DIR}/"
+echo "========================================="
 ls -lh "${OUTPUT_DIR}"/*.{js,wasm} 2>/dev/null || echo "WASM bindings not found"
 

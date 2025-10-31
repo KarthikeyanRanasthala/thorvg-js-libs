@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { gsap } from "gsap";
 
-import { SwCanvas, Rect } from "react-thorvg-fiber";
-import wasmUrl from "react-thorvg-fiber/thorvg.wasm?url";
+import { SwCanvas, GlCanvas, Rect } from "react-thorvg-fiber";
+
+import swWasmUrl from "react-thorvg-fiber/thorvg-sw.wasm?url";
+import glWasmUrl from "react-thorvg-fiber/thorvg-gl.wasm?url";
 
 // Helper function to convert HSL to RGB
 function hslToRgb(h: number, s: number, l: number): [number, number, number] {
@@ -96,17 +98,25 @@ function App() {
     });
   }, []);
 
+  const locateSwFile = useCallback(() => {
+    return swWasmUrl;
+  }, []);
+
+  const locateGlFile = useCallback(() => {
+    return glWasmUrl;
+  }, []);
+
   return (
     <>
       <h1>React + ThorVG</h1>
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-        <div>
-          <h2>Software Renderer (Canvas)</h2>
+      <div className="canvases-container">
+        <div className="canvas-wrapper">
+          <h2>Software Renderer</h2>
           <SwCanvas
             width={HTML_CANVAS_SIZE}
             height={HTML_CANVAS_SIZE}
-            wasmPath={wasmUrl}
             devicePixelRatio={DPR}
+            locateFile={locateSwFile}
           >
             {shapeData.map((shape) => (
               <Rect
@@ -120,6 +130,28 @@ function App() {
               />
             ))}
           </SwCanvas>
+        </div>
+        <div className="canvas-wrapper">
+          <h2>WebGL Renderer</h2>
+          <GlCanvas
+            id="gl-canvas"
+            width={HTML_CANVAS_SIZE}
+            height={HTML_CANVAS_SIZE}
+            devicePixelRatio={DPR}
+            locateFile={locateGlFile}
+          >
+            {shapeData.map((shape) => (
+              <Rect
+                key={shape.key}
+                x={shape.x}
+                y={shape.y}
+                width={SHAPE_SIZE}
+                height={SHAPE_SIZE}
+                fill={shape.color}
+                rotation={rotation}
+              />
+            ))}
+          </GlCanvas>
         </div>
       </div>
       <div className="card">

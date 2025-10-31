@@ -11,11 +11,12 @@ import ReactReconciler from "react-reconciler";
 
 import {
   Engine,
-  loadWasm,
   SwCanvas as ThorVGSwCanvas,
   GlCanvas as ThorVGGlCanvas,
   TvgColorspace,
-  ThorVGContext,
+  AnyThorVGModule,
+  SwModuleFactory,
+  GlModuleFactory,
 } from "bindings";
 import { reconciler } from "./reconciler";
 import { logger } from "./logger";
@@ -52,12 +53,12 @@ const flushSwCanvasToHtmlCanvas = (
 };
 
 const createReconcilerContainer = (
-  ctx: ThorVGContext,
+  module: AnyThorVGModule,
   canvas: ThorVGSwCanvas | ThorVGGlCanvas
 ): ReactReconciler.OpaqueRoot => {
   return reconciler.createContainer(
     {
-      ctx,
+      module,
       canvas,
     },
     LegacyRoot,
@@ -119,23 +120,12 @@ const setupCanvasElement = (
   return { scaledWidth, scaledHeight };
 };
 
-const initializeWasmEngine = async (
-  wasmPath?: string
-): Promise<{
-  ctx: ThorVGContext;
-  engine: Engine;
-}> => {
-  const ctx = await loadWasm({ wasmPath });
-  const engine = new Engine(ctx);
-  engine.init();
-  return { ctx, engine };
-};
-
 type CanvasPropsBase = ComponentPropsWithoutRef<"canvas"> & {
   width: number;
   height: number;
   wasmPath?: string;
   devicePixelRatio?: number;
+  locateFile?: (path: string, prefix: string) => string;
 };
 
 export type SwCanvasProps = Omit<CanvasPropsBase, "id">;
@@ -150,6 +140,7 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
   height,
   wasmPath,
   devicePixelRatio,
+  locateFile,
   ...props
 }) => {
   const canvasElementRef = useRef<HTMLCanvasElement>(null);
@@ -166,7 +157,11 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
   useEffect(() => {
     (async () => {
       try {
-        const { ctx } = await initializeWasmEngine(wasmPath);
+        const module = await SwModuleFactory({
+          locateFile,
+        });
+        const engine = new Engine(module);
+        engine.init();
 
         const { scaledWidth, scaledHeight } = setupCanvasElement(
           canvasElementRef.current,
@@ -176,11 +171,11 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
         );
 
         // Create ThorVG software canvas
-        const swCanvas = new ThorVGSwCanvas(ctx);
+        const swCanvas = new ThorVGSwCanvas(module);
         swCanvas.setTarget(scaledWidth, scaledHeight, TvgColorspace.ABGR8888);
         thorvgCanvasRef.current = swCanvas;
 
-        rootRef.current = createReconcilerContainer(ctx, swCanvas);
+        rootRef.current = createReconcilerContainer(module, swCanvas);
 
         // Render the children into the reconciler container
         updateReconcilerContainer(children, rootRef.current, flushToCanvas);
@@ -192,7 +187,7 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
     return () => {
       cleanupReconcilerContainer(rootRef.current, thorvgCanvasRef.current);
     };
-  }, [wasmPath, width, height, devicePixelRatio]);
+  }, [width, height, devicePixelRatio]);
 
   // Update the container when children change
   useEffect(() => {
@@ -215,6 +210,7 @@ export const GlCanvas: FC<PropsWithChildren<GlCanvasProps>> = ({
   wasmPath,
   devicePixelRatio,
   id,
+  locateFile,
   ...props
 }) => {
   const canvasElementRef = useRef<HTMLCanvasElement>(null);
@@ -224,7 +220,11 @@ export const GlCanvas: FC<PropsWithChildren<GlCanvasProps>> = ({
   useEffect(() => {
     (async () => {
       try {
-        const { ctx } = await initializeWasmEngine(wasmPath);
+        const module = await GlModuleFactory({
+          locateFile,
+        });
+        const engine = new Engine(module);
+        engine.init();
 
         const { scaledWidth, scaledHeight } = setupCanvasElement(
           canvasElementRef.current,
@@ -234,12 +234,12 @@ export const GlCanvas: FC<PropsWithChildren<GlCanvasProps>> = ({
         );
 
         // Create ThorVG GL canvas
-        const glCanvas = new ThorVGGlCanvas(ctx, `#${id}`);
+        const glCanvas = new ThorVGGlCanvas(module, `#${id}`);
         // GL canvas only supports ABGR8888S (straight alpha)
         glCanvas.setTarget(scaledWidth, scaledHeight, TvgColorspace.ABGR8888S);
         thorvgCanvasRef.current = glCanvas;
 
-        rootRef.current = createReconcilerContainer(ctx, glCanvas);
+        rootRef.current = createReconcilerContainer(module, glCanvas);
 
         // Render the children into the reconciler container
         updateReconcilerContainer(children, rootRef.current);

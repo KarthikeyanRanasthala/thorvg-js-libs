@@ -1,16 +1,16 @@
-import { ThorVGContext } from "./wasm-loader.js";
 import { TvgColorspace } from "./types.js";
 import { Canvas } from "./canvas.js";
 import { checkResult } from "./utils.js";
+import { GlModule } from "./wasm.js";
 
 export class GlCanvas extends Canvas {
   private emscriptenContextHandle: number = 0;
 
-  constructor(context: ThorVGContext, canvasSelector: string) {
+  constructor(module: GlModule, canvasSelector: string) {
     // Create WebGL context via Emscripten FIRST
     // This creates a proper Emscripten-managed WebGL2 context and makes it current
     const emscriptenContextHandle =
-      context.module._tvg_webgl_create_context(canvasSelector);
+      module._tvg_webgl_create_context(canvasSelector);
 
     if (emscriptenContextHandle === 0) {
       throw new Error(
@@ -19,9 +19,9 @@ export class GlCanvas extends Canvas {
     }
 
     // Now create GL canvas handle (after WebGL context is ready)
-    const handle = context.module._tvg_glcanvas_create();
+    const handle = module._tvg_glcanvas_create();
 
-    super(context.module, handle);
+    super(module, handle);
 
     this.emscriptenContextHandle = emscriptenContextHandle;
   }

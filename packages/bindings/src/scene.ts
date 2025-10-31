@@ -1,12 +1,12 @@
-import { ThorVGContext } from './wasm-loader.js';
-import { TvgPaint, TvgResult } from './types.js';
-import { Paint } from './paint.js';
-import { checkResult } from './utils.js';
+import { TvgPaint } from "./types.js";
+import { Paint } from "./paint.js";
+import { checkResult } from "./utils.js";
+import { AnyThorVGModule } from "./wasm.js";
 
 export class Scene extends Paint {
-  constructor(context: ThorVGContext) {
-    const handle = context.module._tvg_scene_new();
-    super(context, handle);
+  constructor(module: AnyThorVGModule) {
+    const handle = module._tvg_scene_new();
+    super(module, handle);
   }
 
   push(paint: TvgPaint): this {

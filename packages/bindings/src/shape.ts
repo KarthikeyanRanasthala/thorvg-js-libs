@@ -1,12 +1,11 @@
-import { ThorVGContext } from './wasm-loader.js';
-import { TvgResult } from './types.js';
-import { Paint } from './paint.js';
-import { checkResult } from './utils.js';
+import { Paint } from "./paint.js";
+import { checkResult } from "./utils.js";
+import { AnyThorVGModule } from "./wasm.js";
 
 export class Shape extends Paint {
-  constructor(context: ThorVGContext) {
-    const handle = context.module._tvg_shape_new();
-    super(context, handle);
+  constructor(module: AnyThorVGModule) {
+    const handle = module._tvg_shape_new();
+    super(module, handle);
   }
 
   reset(): this {
@@ -15,14 +14,7 @@ export class Shape extends Paint {
     return this;
   }
 
-  appendRect(
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    rx = 0,
-    ry = 0
-  ): this {
+  appendRect(x: number, y: number, w: number, h: number, rx = 0, ry = 0): this {
     const result = this.module._tvg_shape_append_rect(
       this.handle,
       x,
@@ -51,13 +43,25 @@ export class Shape extends Paint {
   }
 
   fill(r = 0, g = 0, b = 0, a = 255): this {
-    const result = this.module._tvg_shape_set_fill_color(this.handle, r, g, b, a);
+    const result = this.module._tvg_shape_set_fill_color(
+      this.handle,
+      r,
+      g,
+      b,
+      a
+    );
     checkResult(result);
     return this;
   }
 
   stroke(r = 0, g = 0, b = 0, a = 255): this {
-    const result = this.module._tvg_shape_set_stroke_color(this.handle, r, g, b, a);
+    const result = this.module._tvg_shape_set_stroke_color(
+      this.handle,
+      r,
+      g,
+      b,
+      a
+    );
     checkResult(result);
     return this;
   }

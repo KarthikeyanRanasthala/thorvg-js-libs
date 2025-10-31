@@ -34,11 +34,11 @@ export const hostConfig: HostConfig<
     logger.log("createInstance", type, props);
 
     if (type === "group") {
-      const scene = new Scene(containerInfo.ctx);
+      const scene = new Scene(containerInfo.module);
       applyProps({ scene, type, props });
       return { paint: scene.handle, scene, type };
     } else {
-      const shape = new Shape(containerInfo.ctx);
+      const shape = new Shape(containerInfo.module);
       applyProps({ shape, type, props });
       return { paint: shape.handle, shape, type };
     }

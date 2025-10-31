@@ -1,19 +1,19 @@
-import { ThorVGContext } from "./wasm-loader.js";
 import { TvgColorspace, TvgEngineOption } from "./types.js";
 import { Canvas } from "./canvas.js";
 import { checkResult } from "./utils.js";
+import { SwModule } from "./wasm.js";
 
 export class SwCanvas extends Canvas {
   bufferPtr: number = 0;
   bufferSize: number = 0;
 
   constructor(
-    context: ThorVGContext,
+    module: SwModule,
     option: TvgEngineOption = TvgEngineOption.DEFAULT
   ) {
-    const handle = context.module._tvg_swcanvas_create(option);
+    const handle = module._tvg_swcanvas_create(option);
 
-    super(context.module, handle);
+    super(module, handle);
   }
 
   setTarget(width: number, height: number, colorspace: TvgColorspace): void {

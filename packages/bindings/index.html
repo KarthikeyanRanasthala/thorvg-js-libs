@@ -43,38 +43,41 @@
       <canvas id="gl-canvas"></canvas>
     </div>
     <script type="module">
-      import { loadWasm, Engine, GlCanvas, Shape, TvgColorspace } from "./src";
+      import {
+        Engine,
+        GlCanvas,
+        GlModuleFactory,
+        Shape,
+        TvgColorspace,
+      } from "./src";
 
       const canvasElement = document.getElementById("gl-canvas");
 
-      // Check for WebGL2 support
-      if (!canvasElement.getContext("webgl2")) {
-        document.querySelector(".info").textContent =
-          "WebGL2 is not supported in your browser!";
-        throw new Error("WebGL2 not supported");
+      if (!canvasElement) {
+        throw new Error("Canvas element not found");
       }
 
       // Set canvas size before creating GL context
       canvasElement.width = 500;
       canvasElement.height = 500;
 
-      const ctx = await loadWasm({});
+      const module = await GlModuleFactory();
 
-      const engine = new Engine(ctx);
+      const engine = new Engine(module);
       engine.init();
 
       // Create WebGL canvas - it gets the WebGL2 context internally
-      const canvas = new GlCanvas(ctx, "#gl-canvas");
+      const canvas = new GlCanvas(module, "#gl-canvas");
       canvas.setTarget(500, 500, TvgColorspace.ABGR8888S);
 
-      const rect = new Shape(ctx);
+      const rect = new Shape(module);
       rect
         .appendRect(140, 200, 100, 100)
         .fill(255, 0, 0, 255)
         .stroke(0, 0, 0, 255)
         .strokeWidth(6);
 
-      const circle = new Shape(ctx);
+      const circle = new Shape(module);
       circle
         .appendCircle(310, 250, 50, 50)
         .fill(0, 128, 255, 255)

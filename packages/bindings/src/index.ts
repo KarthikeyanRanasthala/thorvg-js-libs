@@ -1,5 +1,3 @@
-export { loadWasm } from "./wasm-loader.js";
-export type { ThorVGContext, Module } from "./wasm-loader.js";
 export { Engine } from "./engine.js";
 export { Canvas } from "./canvas.js";
 export { SwCanvas } from "./sw-canvas.js";
@@ -7,5 +5,12 @@ export { GlCanvas } from "./gl-canvas.js";
 export { Paint } from "./paint.js";
 export { Shape } from "./shape.js";
 export { Scene } from "./scene.js";
+export {
+  SwModuleFactory,
+  type SwModule,
+  GlModuleFactory,
+  type GlModule,
+  type AnyThorVGModule,
+} from "./wasm.js";
 export { TvgResult, TvgColorspace, TvgEngineOption } from "./types.js";
 export type { TvgCanvas, TvgPaint, TvgMatrix } from "./types.js";

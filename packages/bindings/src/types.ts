@@ -1,23 +1,30 @@
-export enum TvgResult {
-  SUCCESS = 0,
-  INVALID_ARGUMENT = 1,
-  INSUFFICIENT_CONDITION = 2,
-  FAILED_ALLOCATION = 3,
-  MEMORY_CORRUPTION = 4,
-  NOT_SUPPORTED = 5,
-  UNKNOWN = 6,
-}
+export const TvgResult = {
+  SUCCESS: 0,
+  INVALID_ARGUMENT: 1,
+  INSUFFICIENT_CONDITION: 2,
+  FAILED_ALLOCATION: 3,
+  MEMORY_CORRUPTION: 4,
+  NOT_SUPPORTED: 5,
+  UNKNOWN: 6,
+} as const;
 
-export enum TvgColorspace {
-  ABGR8888 = 0,
-  ARGB8888 = 1,
-  ABGR8888S = 2,
-  ARGB8888S = 3,
-}
+export type TvgResult = (typeof TvgResult)[keyof typeof TvgResult];
 
-export enum TvgEngineOption {
-  DEFAULT = 1,
-}
+export const TvgColorspace = {
+  ABGR8888: 0,
+  ARGB8888: 1,
+  ABGR8888S: 2,
+  ARGB8888S: 3,
+} as const;
+
+export type TvgColorspace = (typeof TvgColorspace)[keyof typeof TvgColorspace];
+
+export const TvgEngineOption = {
+  DEFAULT: 1,
+} as const;
+
+export type TvgEngineOption =
+  (typeof TvgEngineOption)[keyof typeof TvgEngineOption];
 
 export type TvgCanvas = number; // Pointer
 export type TvgPaint = number; // Pointer
