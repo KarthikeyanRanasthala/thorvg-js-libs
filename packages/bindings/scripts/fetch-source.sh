@@ -2,7 +2,7 @@
 set -e
 
 # Configuration
-THORVG_TAG="v1.0-pre30"
+THORVG_TAG="v1.0-pre31"
 TEMP_DIR="temp"
 ARCHIVE_NAME="thorvg-${THORVG_TAG}.tar.gz"
 EXTRACTED_DIR="thorvg-source"

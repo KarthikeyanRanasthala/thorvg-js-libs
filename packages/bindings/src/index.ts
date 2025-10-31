@@ -1,7 +1,9 @@
 export { loadWasm } from "./wasm-loader.js";
-export type { ThorVGContext, MainModule } from "./wasm-loader.js";
+export type { ThorVGContext, Module } from "./wasm-loader.js";
 export { Engine } from "./engine.js";
-export { SwCanvas } from "./canvas.js";
+export { Canvas } from "./canvas.js";
+export { SwCanvas } from "./sw-canvas.js";
+export { GlCanvas } from "./gl-canvas.js";
 export { Paint } from "./paint.js";
 export { Shape } from "./shape.js";
 export { Scene } from "./scene.js";

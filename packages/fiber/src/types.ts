@@ -3,13 +3,15 @@ import {
   Scene,
   ThorVGContext,
   SwCanvas as ThorVGSwCanvas,
+  GlCanvas as ThorVGGlCanvas,
   TvgPaint,
 } from "bindings";
 
+export type ThorVGCanvas = ThorVGSwCanvas | ThorVGGlCanvas;
+
 export interface Container {
   ctx: ThorVGContext;
-  canvas: ThorVGSwCanvas;
-  htmlCanvas?: HTMLCanvasElement;
+  canvas: ThorVGCanvas;
 }
 
 export interface Instance {

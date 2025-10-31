@@ -1,89 +1,97 @@
-import { ThorVGContext, type MainModule } from "./wasm-loader.js";
-import {
-  TvgCanvas,
-  TvgPaint,
-  TvgColorspace,
-  TvgEngineOption,
-  TvgResult,
-} from "./types.js";
+import { type Module } from "./wasm-loader.js";
+import { TvgCanvas, TvgPaint } from "./types.js";
 import { checkResult } from "./utils.js";
 
-export class SwCanvas {
-  readonly handle: TvgCanvas;
-  readonly module: MainModule;
-  bufferPtr: number = 0;
-  bufferSize: number = 0;
+/**
+ * Base class for ThorVG canvas implementations.
+ * Contains common methods shared by SwCanvas and GlCanvas.
+ */
+export abstract class Canvas {
+  protected readonly handle: TvgCanvas;
+  readonly module: Module;
 
-  constructor(
-    context: ThorVGContext,
-    option: TvgEngineOption = TvgEngineOption.DEFAULT
-  ) {
-    this.module = context.module;
-    this.handle = this.module._tvg_swcanvas_create(option);
+  protected constructor(module: Module, handle: TvgCanvas) {
+    this.module = module;
+    this.handle = handle;
   }
 
-  setTarget(width: number, height: number, colorspace: TvgColorspace): void {
-    this.bufferSize = width * height * 4;
-    if (this.bufferPtr !== 0) {
-      this.module._free(this.bufferPtr);
-    }
-    this.bufferPtr = this.module._malloc(this.bufferSize);
-
-    const result = this.module._tvg_swcanvas_set_target(
-      this.handle,
-      this.bufferPtr,
-      width,
-      width,
-      height,
-      colorspace
-    );
-    checkResult(result);
-  }
-
-  push(paint: TvgPaint): void {
+  /**
+   * Push a paint object to the canvas for rendering.
+   */
+  push(paint: TvgPaint): this {
     const result = this.module._tvg_canvas_push(this.handle, paint);
     checkResult(result);
+    return this;
   }
 
-  insertBefore(target: TvgPaint, before: TvgPaint): void {
+  /**
+   * Insert a paint object before another paint object.
+   */
+  insertBefore(target: TvgPaint, before: TvgPaint): this {
     const result = this.module._tvg_canvas_push_at(this.handle, target, before);
     checkResult(result);
+    return this;
   }
 
-  remove(paint: TvgPaint): void {
+  /**
+   * Remove a paint object from the canvas.
+   */
+  remove(paint: TvgPaint): this {
     const result = this.module._tvg_canvas_remove(this.handle, paint);
     checkResult(result);
+    return this;
   }
 
-  clear(): void {
+  /**
+   * Clear all paint objects from the canvas.
+   */
+  clear(): this {
     // Pass 0 (null) to remove all paints
     const result = this.module._tvg_canvas_remove(this.handle, 0);
     checkResult(result);
+    return this;
   }
 
-  update(): void {
+  /**
+   * Update the canvas to reflect changes in paint objects.
+   */
+  update(): this {
     const result = this.module._tvg_canvas_update(this.handle);
     checkResult(result);
+    return this;
   }
 
-  draw(clear: boolean = true): void {
+  /**
+   * Draw the canvas content.
+   * @param clear - Whether to clear the canvas before drawing
+   */
+  draw(clear: boolean = true): this {
     const result = this.module._tvg_canvas_draw(this.handle, clear ? 1 : 0);
     checkResult(result);
+    return this;
   }
 
-  sync(): void {
+  /**
+   * Synchronize the canvas (wait for rendering to complete).
+   */
+  sync(): this {
     const result = this.module._tvg_canvas_sync(this.handle);
     checkResult(result);
+    return this;
   }
 
-  destroy(): void {
-    // Free allocated buffer
-    if (this.bufferPtr !== 0) {
-      this.module._free(this.bufferPtr);
-      this.bufferPtr = 0;
-    }
-    // Destroy canvas
+  /**
+   * Destroy the canvas handle.
+   * Subclasses should call this after cleaning up their own resources.
+   */
+  protected destroyCanvas(): void {
     const result = this.module._tvg_canvas_destroy(this.handle);
     checkResult(result);
   }
+
+  /**
+   * Destroy the canvas and clean up resources.
+   * Subclasses must implement this to clean up their specific resources.
+   */
+  abstract destroy(): void;
 }
