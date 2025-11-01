@@ -5,6 +5,7 @@ export { GlCanvas } from "./gl-canvas.js";
 export { Paint } from "./paint.js";
 export { Shape } from "./shape.js";
 export { Scene } from "./scene.js";
+export { Accessor, type AccessorCallback, type PaintInfo } from "./accessor.js";
 export {
   SwModuleFactory,
   type SwModule,
@@ -12,5 +13,10 @@ export {
   type GlModule,
   type AnyThorVGModule,
 } from "./wasm.js";
-export { TvgResult, TvgColorspace, TvgEngineOption } from "./types.js";
-export type { TvgCanvas, TvgPaint, TvgMatrix } from "./types.js";
+export {
+  TvgResult,
+  TvgColorspace,
+  TvgEngineOption,
+  TvgPaintType,
+} from "./types.js";
+export type { TvgCanvas, TvgPaint, TvgMatrix, TvgAccessor } from "./types.js";

@@ -19,6 +19,7 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
+    "test": "turbo test",
     "publish-packages": "turbo run build && pnpm publish -r"
   },
   "devDependencies": {

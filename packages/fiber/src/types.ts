@@ -12,6 +12,7 @@ export type ThorVGCanvas = ThorVGSwCanvas | ThorVGGlCanvas;
 export interface Container {
   module: AnyThorVGModule;
   canvas: ThorVGCanvas;
+  rootScene: Scene;
 }
 
 export interface Instance {

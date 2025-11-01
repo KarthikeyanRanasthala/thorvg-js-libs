@@ -1,4 +1,5 @@
 import { TvgResult } from "./types.js";
+import type { AnyThorVGModule } from "./wasm.js";
 
 /**
  * Checks if a ThorVG operation result is successful, throws if not.

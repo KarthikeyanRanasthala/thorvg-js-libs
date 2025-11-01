@@ -125,7 +125,7 @@ export const hostConfig: HostConfig<
   },
   appendChildToContainer: (containerInfo: Container, child: Instance) => {
     logger.log("appendChildToContainer", child.type);
-    containerInfo.canvas.push(child.paint);
+    containerInfo.rootScene.push(child.paint);
   },
   insertBefore: (parent: Instance, child: Instance, beforeChild: Instance) => {
     logger.log("insertBefore", parent.type, child.type, beforeChild.type);
@@ -139,7 +139,7 @@ export const hostConfig: HostConfig<
     beforeChild: Instance
   ) => {
     logger.log("insertInContainerBefore", child.type, beforeChild.type);
-    containerInfo.canvas.insertBefore(child.paint, beforeChild.paint);
+    containerInfo.rootScene.insertBefore(child.paint, beforeChild.paint);
   },
   removeChild: (parent: Instance, child: Instance) => {
     logger.log("removeChild", parent.type, child.type);
@@ -149,7 +149,7 @@ export const hostConfig: HostConfig<
   },
   removeChildFromContainer: (containerInfo: Container, child: Instance) => {
     logger.log("removeChildFromContainer", child.type);
-    containerInfo.canvas.remove(child.paint);
+    containerInfo.rootScene.remove(child.paint);
   },
   resetTextContent: () => {
     logger.log("resetTextContent");
@@ -170,13 +170,9 @@ export const hostConfig: HostConfig<
       props: nextProps,
     });
   },
-  clearContainer: () => {
+  clearContainer: (containerInfo: Container) => {
     logger.log("clearContainer");
-    // Don't implement clearContainer - let React handle cleanup via removeChildFromContainer
-    // Calling canvas.clear() directly causes issues because React still holds references
-    // to the paint handles, leading to use-after-free when React tries to clean up.
-    // By leaving this empty, React will call removeChildFromContainer for each child,
-    // which properly manages reference counting.
+    containerInfo.rootScene.remove(null);
   },
   supportsHydration: false,
   NotPendingTransition: null,

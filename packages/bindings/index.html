@@ -61,7 +61,11 @@
       canvasElement.width = 500;
       canvasElement.height = 500;
 
-      const module = await GlModuleFactory();
+      const module = await GlModuleFactory({
+        locateFile: (path) => {
+          return `./wasm/thorvg-gl.wasm`;
+        },
+      });
 
       const engine = new Engine(module);
       engine.init();
