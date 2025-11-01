@@ -16,6 +16,11 @@ declare namespace RuntimeExports {
      * @return {string}
      */
     function UTF8ToString(ptr: number, maxBytesToRead?: number | undefined, ignoreNul?: boolean | undefined): string;
+    function stringToUTF8(str: any, outPtr: any, maxBytesToWrite: any): any;
+    function lengthBytesUTF8(str: any): number;
+    /** @param {string=} sig */
+    function addFunction(func: any, sig?: string | undefined): any;
+    function removeFunction(index: any): void;
 }
 interface WasmModule {
   _free(_0: number): void;
@@ -36,6 +41,7 @@ interface WasmModule {
   _tvg_paint_set_transform(_0: number, _1: number): number;
   _tvg_paint_get_transform(_0: number, _1: number): number;
   _tvg_paint_set_opacity(_0: number, _1: number): number;
+  _tvg_paint_get_type(_0: number, _1: number): number;
   _tvg_shape_new(): number;
   _tvg_shape_reset(_0: number): number;
   _tvg_shape_append_rect(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number, _6: number, _7: number): number;
@@ -47,6 +53,10 @@ interface WasmModule {
   _tvg_scene_push(_0: number, _1: number): number;
   _tvg_scene_push_at(_0: number, _1: number, _2: number): number;
   _tvg_scene_remove(_0: number, _1: number): number;
+  _tvg_accessor_new(): number;
+  _tvg_accessor_del(_0: number): number;
+  _tvg_accessor_set(_0: number, _1: number, _2: number, _3: number): number;
+  _tvg_accessor_generate_id(_0: number): number;
 }
 
 interface EmbindModule {

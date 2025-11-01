@@ -1,11 +1,10 @@
+/// <reference types="vitest/config" />
+
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import { copyFileSync } from "fs";
 
 export default defineConfig({
-  define: {
-    "process.env.NODE_ENV": '"production"',
-  },
   build: {
     lib: {
       entry: "./src/index.ts",
@@ -52,4 +51,5 @@ export default defineConfig({
       },
     },
   ],
+  test: {},
 });
