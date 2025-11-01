@@ -1,3 +1,11 @@
+export const ElementType = {
+  SCENE: "scene",
+  SHAPE: "shape",
+  RECT: "rect",
+  CIRCLE: "circle",
+  PATH: "path",
+} as const;
+
 export const STYLE_PROPS = new Set([
   "fill",
   "stroke",

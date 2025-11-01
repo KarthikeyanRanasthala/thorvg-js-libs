@@ -44,11 +44,17 @@ interface WasmModule {
   _tvg_paint_get_type(_0: number, _1: number): number;
   _tvg_shape_new(): number;
   _tvg_shape_reset(_0: number): number;
+  _tvg_shape_move_to(_0: number, _1: number, _2: number): number;
+  _tvg_shape_line_to(_0: number, _1: number, _2: number): number;
+  _tvg_shape_cubic_to(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number, _6: number): number;
+  _tvg_shape_close(_0: number): number;
   _tvg_shape_append_rect(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number, _6: number, _7: number): number;
   _tvg_shape_append_circle(_0: number, _1: number, _2: number, _3: number, _4: number, _5: number): number;
+  _tvg_shape_append_path(_0: number, _1: number, _2: number, _3: number, _4: number): number;
   _tvg_shape_set_stroke_width(_0: number, _1: number): number;
   _tvg_shape_set_stroke_color(_0: number, _1: number, _2: number, _3: number, _4: number): number;
   _tvg_shape_set_fill_color(_0: number, _1: number, _2: number, _3: number, _4: number): number;
+  _tvg_shape_set_fill_rule(_0: number, _1: number): number;
   _tvg_scene_new(): number;
   _tvg_scene_push(_0: number, _1: number): number;
   _tvg_scene_push_at(_0: number, _1: number, _2: number): number;

@@ -3,7 +3,8 @@ export { Canvas } from "./canvas.js";
 export { SwCanvas } from "./sw-canvas.js";
 export { GlCanvas } from "./gl-canvas.js";
 export { Paint } from "./paint.js";
-export { Shape } from "./shape.js";
+export { Shape, PathCommand, FillRule, type Point } from "./shape.js";
+export type { PathCommand as PathCommandType, FillRule as FillRuleType } from "./shape.js";
 export { Scene } from "./scene.js";
 export { Accessor, type AccessorCallback, type PaintInfo } from "./accessor.js";
 export {

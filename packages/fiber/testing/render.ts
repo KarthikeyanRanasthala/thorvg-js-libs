@@ -48,7 +48,7 @@ export async function render(
     });
   });
 
-  const container = (root as any).containerInfo;
+  const container = root.containerInfo;
 
   return {
     container,
