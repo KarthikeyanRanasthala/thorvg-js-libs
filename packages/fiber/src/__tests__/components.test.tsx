@@ -24,7 +24,7 @@ describe("shape", () => {
   it("should maintain instance when children change", async () => {
     const { getByType, unmount, rerender } = await render(
       <Shape fill={[255, 0, 0, 255]}>
-        <Rect width={50} height={50} />
+        <Rect x={0} y={0} width={50} height={50} />
       </Shape>
     );
 
@@ -33,7 +33,7 @@ describe("shape", () => {
 
     await rerender(
       <Shape fill={[0, 255, 0, 255]}>
-        <Circle radius={25} />
+        <Circle x={0} y={0} radius={25} />
       </Shape>
     );
 
@@ -46,7 +46,7 @@ describe("shape", () => {
   it("should maintain instance when children's props change", async () => {
     const { getByType, unmount, rerender } = await render(
       <Shape fill={[255, 0, 0, 255]}>
-        <Rect width={50} height={50} />
+        <Rect x={0} y={0} width={50} height={50} />
       </Shape>
     );
 
@@ -55,7 +55,7 @@ describe("shape", () => {
 
     await rerender(
       <Shape fill={[0, 255, 0, 255]}>
-        <Rect width={100} height={100} />
+        <Rect x={0} y={0} width={100} height={100} />
       </Shape>
     );
 
@@ -68,7 +68,7 @@ describe("shape", () => {
   it("should maintain instance when children are added", async () => {
     const { getByType, unmount, rerender } = await render(
       <Shape fill={[255, 0, 0, 255]}>
-        <Rect width={50} height={50} />
+        <Rect x={0} y={0} width={50} height={50} />
       </Shape>
     );
 
@@ -77,8 +77,8 @@ describe("shape", () => {
 
     await rerender(
       <Shape fill={[0, 255, 0, 255]}>
-        <Rect width={50} height={50} />
-        <Circle radius={25} />
+        <Rect x={0} y={0} width={50} height={50} />
+        <Circle x={0} y={0} radius={25} />
       </Shape>
     );
 
@@ -91,8 +91,8 @@ describe("shape", () => {
   it("should maintain instance when children are removed", async () => {
     const { getByType, unmount, rerender } = await render(
       <Shape fill={[255, 0, 0, 255]}>
-        <Rect width={50} height={50} />
-        <Circle radius={25} />
+        <Rect x={0} y={0} width={50} height={50} />
+        <Circle x={0} y={0} radius={25} />
       </Shape>
     );
 
@@ -101,7 +101,7 @@ describe("shape", () => {
 
     await rerender(
       <Shape fill={[0, 255, 0, 255]}>
-        <Rect width={50} height={50} />
+        <Rect x={0} y={0} width={50} height={50} />
       </Shape>
     );
 
@@ -114,8 +114,8 @@ describe("shape", () => {
   it("should maintain instance when children are reordered", async () => {
     const { getByType, unmount, rerender } = await render(
       <Shape fill={[255, 0, 0, 255]}>
-        <Rect width={50} height={50} />
-        <Circle radius={25} />
+        <Rect x={0} y={0} width={50} height={50} />
+        <Circle x={0} y={0} radius={25} />
       </Shape>
     );
 
@@ -124,8 +124,8 @@ describe("shape", () => {
 
     await rerender(
       <Shape fill={[0, 255, 0, 255]}>
-        <Circle radius={25} />
-        <Rect width={50} height={50} />
+        <Circle x={0} y={0} radius={25} />
+        <Rect x={0} y={0} width={50} height={50} />
       </Shape>
     );
 

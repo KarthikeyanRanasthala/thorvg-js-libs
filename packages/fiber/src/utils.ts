@@ -1,4 +1,4 @@
-import { Shape, Scene, FillRule, PathCommand } from "bindings";
+import { Shape, Scene, FillRule, PathCommand, StrokeCap, StrokeJoin } from "bindings";
 import {
   Props,
   Type,
@@ -116,6 +116,29 @@ export const applyProps = ({
       shape.strokeWidth(shapeProps.strokeWidth ?? DEFAULT_STROKE_WIDTH);
     }
 
+    // Apply stroke dash
+    if (shapeProps.strokeDash && shapeProps.strokeDash.length > 0) {
+      shape.strokeDash(
+        shapeProps.strokeDash,
+        shapeProps.strokeDashOffset ?? 0
+      );
+    }
+
+    // Apply stroke cap
+    if (Object.hasOwn(shapeProps, "strokeCap")) {
+      shape.strokeCap(shapeProps.strokeCap!);
+    }
+
+    // Apply stroke join
+    if (Object.hasOwn(shapeProps, "strokeJoin")) {
+      shape.strokeJoin(shapeProps.strokeJoin!);
+    }
+
+    // Apply stroke miterlimit
+    if (Object.hasOwn(shapeProps, "strokeMiterlimit")) {
+      shape.strokeMiterlimit(shapeProps.strokeMiterlimit ?? 4);
+    }
+
     // Apply fill rule
     if (shapeProps.fillRule) {
       shape.fillRule(
@@ -145,11 +168,14 @@ export const applyProps = ({
   if (shape) {
     if (type === ElementType.RECT) {
       const rectProps = props as RectProps;
+
       shape.appendRect(
-        -rectProps.width / 2,
-        -rectProps.height / 2,
+        rectProps.x,
+        rectProps.y,
         rectProps.width,
-        rectProps.height
+        rectProps.height,
+        rectProps.rx ?? 0,
+        rectProps.ry ?? 0
       );
     } else if (type === ElementType.CIRCLE) {
       const circleProps = props as CircleProps;
@@ -157,7 +183,7 @@ export const applyProps = ({
       const rx = circleProps.radius ?? circleProps.rx ?? 0;
       const ry = circleProps.radius ?? circleProps.ry ?? 0;
 
-      shape.appendCircle(0, 0, rx, ry);
+      shape.appendCircle(circleProps.x, circleProps.y, rx, ry);
     } else if (type === ElementType.PATH) {
       const pathProps = props as PathProps;
 

@@ -18,7 +18,6 @@ export type {
   SceneProps,
   Color,
   TransformProps,
-  BaseShapeProps,
 } from "./types";
 
 // Re-export PathCommand, FillRule, and Point from bindings

@@ -53,6 +53,10 @@ interface WasmModule {
   _tvg_shape_append_path(_0: number, _1: number, _2: number, _3: number, _4: number): number;
   _tvg_shape_set_stroke_width(_0: number, _1: number): number;
   _tvg_shape_set_stroke_color(_0: number, _1: number, _2: number, _3: number, _4: number): number;
+  _tvg_shape_set_stroke_dash(_0: number, _1: number, _2: number, _3: number): number;
+  _tvg_shape_set_stroke_cap(_0: number, _1: number): number;
+  _tvg_shape_set_stroke_join(_0: number, _1: number): number;
+  _tvg_shape_set_stroke_miterlimit(_0: number, _1: number): number;
   _tvg_shape_set_fill_color(_0: number, _1: number, _2: number, _3: number, _4: number): number;
   _tvg_shape_set_fill_rule(_0: number, _1: number): number;
   _tvg_scene_new(): number;

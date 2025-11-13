@@ -12,8 +12,6 @@ export const PathCommand = {
   CubicTo: 3,
 } as const;
 
-export type PathCommand = (typeof PathCommand)[keyof typeof PathCommand];
-
 /**
  * Fill rule determines how the interior of a shape is determined
  */
@@ -22,7 +20,23 @@ export const FillRule = {
   EvenOdd: 1,
 } as const;
 
-export type FillRule = (typeof FillRule)[keyof typeof FillRule];
+/**
+ * Stroke cap style for open path ends
+ */
+export const StrokeCap = {
+  Butt: 0, // Stroke ends exactly at the path end
+  Round: 1, // Stroke extends with a rounded cap
+  Square: 2, // Stroke extends with a square cap
+} as const;
+
+/**
+ * Stroke join style for path corners
+ */
+export const StrokeJoin = {
+  Bevel: 0, // Beveled corner
+  Round: 1, // Rounded corner
+  Miter: 2, // Sharp corner (limited by miter limit)
+} as const;
 
 /**
  * A point in 2D space
@@ -183,6 +197,51 @@ export class Shape extends Paint {
 
   fillRule(rule: FillRule): this {
     const result = this.module._tvg_shape_set_fill_rule(this.handle, rule);
+    checkResult(result);
+    return this;
+  }
+
+  strokeDash(dashPattern: number[], offset = 0): this {
+    const count = dashPattern.length;
+    const patternPtr = this.module._malloc(count * 4); // 4 bytes per float
+
+    try {
+      // Copy dash pattern to WASM memory
+      for (let i = 0; i < count; i++) {
+        this.module.HEAPF32[patternPtr / 4 + i] = dashPattern[i];
+      }
+
+      const result = this.module._tvg_shape_set_stroke_dash(
+        this.handle,
+        patternPtr,
+        count,
+        offset
+      );
+      checkResult(result);
+    } finally {
+      this.module._free(patternPtr);
+    }
+
+    return this;
+  }
+
+  strokeCap(cap: StrokeCap): this {
+    const result = this.module._tvg_shape_set_stroke_cap(this.handle, cap);
+    checkResult(result);
+    return this;
+  }
+
+  strokeJoin(join: StrokeJoin): this {
+    const result = this.module._tvg_shape_set_stroke_join(this.handle, join);
+    checkResult(result);
+    return this;
+  }
+
+  strokeMiterlimit(miterlimit: number): this {
+    const result = this.module._tvg_shape_set_stroke_miterlimit(
+      this.handle,
+      miterlimit
+    );
     checkResult(result);
     return this;
   }

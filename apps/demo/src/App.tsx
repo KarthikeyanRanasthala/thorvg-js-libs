@@ -131,7 +131,12 @@ function App() {
                 fill={shape.color}
                 rotation={rotation}
               >
-                <Rect width={SHAPE_SIZE} height={SHAPE_SIZE} />
+                <Rect
+                  x={-SHAPE_SIZE / 2}
+                  y={-SHAPE_SIZE / 2}
+                  width={SHAPE_SIZE}
+                  height={SHAPE_SIZE}
+                />
               </Shape>
             ))}
           </SwCanvas>
@@ -153,7 +158,12 @@ function App() {
                 fill={shape.color}
                 rotation={rotation}
               >
-                <Rect width={SHAPE_SIZE} height={SHAPE_SIZE} />
+                <Rect
+                  x={-SHAPE_SIZE / 2}
+                  y={-SHAPE_SIZE / 2}
+                  width={SHAPE_SIZE}
+                  height={SHAPE_SIZE}
+                />
               </Shape>
             ))}
           </GlCanvas>

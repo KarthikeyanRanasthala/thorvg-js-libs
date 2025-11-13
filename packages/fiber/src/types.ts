@@ -7,6 +7,8 @@ import {
   AnyThorVGModule,
   PathCommand,
   FillRule,
+  StrokeCap,
+  StrokeJoin,
   Point,
 } from "bindings";
 
@@ -40,44 +42,51 @@ export interface TransformProps {
   scaleY?: number;
 }
 
-export interface BaseShapeProps extends TransformProps {
+export interface ShapeProps extends TransformProps {
   fill?: Color;
   stroke?: Color;
   strokeWidth?: number;
+  strokeDash?: number[];
+  strokeDashOffset?: number;
+  strokeCap?: StrokeCap;
+  strokeJoin?: StrokeJoin;
+  strokeMiterlimit?: number;
   opacity?: number;
   fillRule?: "nonzero" | "evenodd";
 }
 
-// Shape component props (parent that contains geometry)
-export interface ShapeProps extends BaseShapeProps {}
-
 // Geometry child components (add geometry to parent Shape)
 export interface RectProps {
+  x: number;
+  y: number;
   width: number;
   height: number;
+  rx?: number;
+  ry?: number;
 }
 
 export interface CircleProps {
+  x: number;
+  y: number;
   radius?: number;
   rx?: number;
   ry?: number;
 }
 
-// Path command types - discriminated union for type safety
 export type PathCommandMoveTo = {
-  type: 'M';
+  type: "M";
   x: number;
   y: number;
 };
 
 export type PathCommandLineTo = {
-  type: 'L';
+  type: "L";
   x: number;
   y: number;
 };
 
 export type PathCommandCubicTo = {
-  type: 'C';
+  type: "C";
   x1: number;
   y1: number;
   x2: number;
@@ -87,7 +96,7 @@ export type PathCommandCubicTo = {
 };
 
 export type PathCommandClose = {
-  type: 'Z';
+  type: "Z";
 };
 
 export type PathCommandObject =
@@ -114,4 +123,4 @@ export type Props =
   | SceneProps;
 
 // Re-export for convenience
-export { PathCommand, FillRule, type Point };
+export { PathCommand, FillRule, StrokeCap, StrokeJoin, type Point };
