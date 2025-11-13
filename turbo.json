@@ -9,11 +9,11 @@
       "dependsOn": ["^build"]
     },
     "build": {
-      "outputs": ["dist/**"],
+      "outputs": ["dist/**", ".next/**"],
       "dependsOn": ["^build"]
     },
     "preview": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "cache": false,
       "persistent": true
     }

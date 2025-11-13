@@ -1,0 +1,210 @@
+---
+title: Getting Started
+description: Install and configure React ThorVG Fiber in your project
+---
+
+# Getting Started
+
+This guide will help you install and configure React ThorVG Fiber in your project.
+
+## Installation
+
+Install the package using your preferred package manager:
+
+```bash
+npm install react-thorvg-fiber
+# or
+pnpm add react-thorvg-fiber
+# or
+yarn add react-thorvg-fiber
+```
+
+## Configuration
+
+React ThorVG Fiber requires WebAssembly (WASM) files to be properly configured in your build tool. The configuration depends on your framework.
+
+### Vite
+
+Vite handles WASM files automatically. No special configuration is required. You can import WASM files using the `?url` suffix:
+
+```ts
+import swWasmUrl from "react-thorvg-fiber/thorvg-sw.wasm?url";
+import glWasmUrl from "react-thorvg-fiber/thorvg-gl.wasm?url";
+```
+
+### Next.js
+
+Next.js requires additional webpack configuration to handle WASM files. Add the following to your `next.config.mjs`:
+
+```js
+/** @type {import('next').NextConfig} */
+const config = {
+  reactStrictMode: true,
+  webpack: (config) => {
+    // Enable WebAssembly support
+    config.experiments = { ...config.experiments, asyncWebAssembly: true };
+
+    // Handle WASM files as assets
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: "asset/resource",
+    });
+
+    // Don't parse Emscripten loader files - they use import.meta.url
+    config.module.rules.push({
+      test: /thorvg-.*-loader\.js$/,
+      type: "javascript/auto",
+      parser: {
+        url: false,
+      },
+    });
+
+    return config;
+  },
+};
+
+export default config;
+```
+
+## Choosing a Canvas
+
+React ThorVG Fiber provides two canvas components: `SwCanvas` (software rendering) and `GlCanvas` (WebGL rendering). Choose based on your needs:
+
+### SwCanvas (Software Rendering)
+
+**Use SwCanvas when:**
+- You need maximum compatibility across all browsers and devices
+- You're rendering simple to moderately complex scenes
+- WebGL is not available or you want to avoid WebGL dependencies
+
+**Characteristics:**
+- CPU-based rendering
+- Works everywhere, including environments without WebGL
+- May be slower for very complex scenes with many shapes
+- No special requirements
+
+### GlCanvas (WebGL Rendering)
+
+**Use GlCanvas when:**
+- You need maximum performance for complex scenes
+- You're rendering many shapes or complex graphics
+- WebGL is available in your target environment
+
+**Characteristics:**
+- GPU-accelerated rendering via WebGL
+- Significantly faster for complex scenes
+- Requires WebGL support in the browser
+- Requires a unique `id` prop for WebGL context binding
+
+## Basic Usage
+
+### Using SwCanvas
+
+**With Vite:**
+
+```tsx
+import { useCallback } from "react";
+import { SwCanvas, Rect, Circle } from "react-thorvg-fiber";
+import wasmUrl from "react-thorvg-fiber/thorvg-sw.wasm?url";
+
+function App() {
+  const locateFile = useCallback(() => {
+    return wasmUrl;
+  }, []);
+
+  return (
+    <SwCanvas width={500} height={500} locateFile={locateFile}>
+      <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
+      <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
+    </SwCanvas>
+  );
+}
+```
+
+**With Next.js:**
+
+```tsx
+"use client";
+
+import { useCallback } from "react";
+import { SwCanvas, Rect, Circle } from "react-thorvg-fiber";
+// @ts-expect-error - WASM import
+import wasmUrl from "react-thorvg-fiber/thorvg-sw.wasm";
+
+function App() {
+  const locateFile = useCallback(() => {
+    return wasmUrl;
+  }, []);
+
+  return (
+    <SwCanvas width={500} height={500} locateFile={locateFile}>
+      <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
+      <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
+    </SwCanvas>
+  );
+}
+```
+
+### Using GlCanvas
+
+**With Vite:**
+
+```tsx
+import { useCallback } from "react";
+import { GlCanvas, Rect, Circle } from "react-thorvg-fiber";
+import wasmUrl from "react-thorvg-fiber/thorvg-gl.wasm?url";
+
+function App() {
+  const locateFile = useCallback(() => {
+    return wasmUrl;
+  }, []);
+
+  return (
+    <GlCanvas 
+      id="my-canvas"
+      width={500} 
+      height={500} 
+      locateFile={locateFile}
+    >
+      <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
+      <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
+    </GlCanvas>
+  );
+}
+```
+
+**With Next.js:**
+
+```tsx
+"use client";
+
+import { useCallback } from "react";
+import { GlCanvas, Rect, Circle } from "react-thorvg-fiber";
+// @ts-expect-error - WASM import
+import wasmUrl from "react-thorvg-fiber/thorvg-gl.wasm";
+
+function App() {
+  const locateFile = useCallback(() => {
+    return wasmUrl;
+  }, []);
+
+  return (
+    <GlCanvas 
+      id="my-canvas"
+      width={500} 
+      height={500} 
+      locateFile={locateFile}
+    >
+      <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
+      <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
+    </GlCanvas>
+  );
+}
+```
+
+## Next Steps
+
+- Explore [Examples](/docs/examples) to see what's possible
+- Check the [API Reference](/docs/api) for detailed component documentation
+- Learn about shapes, transforms, and scenes in the examples
+
