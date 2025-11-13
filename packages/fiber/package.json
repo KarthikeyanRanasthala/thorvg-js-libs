@@ -24,7 +24,8 @@
       "import": "./dist/react-thorvg-fiber.js"
     },
     "./thorvg-sw.wasm": "./dist/thorvg-sw.wasm",
-    "./thorvg-gl.wasm": "./dist/thorvg-gl.wasm"
+    "./thorvg-gl.wasm": "./dist/thorvg-gl.wasm",
+    "./*": "./*"
   },
   "module": "./dist/react-thorvg-fiber.js",
   "types": "./dist/index.d.ts",

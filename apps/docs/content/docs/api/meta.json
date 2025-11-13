@@ -1,0 +1,4 @@
+{
+  "title": "API Reference",
+  "pages": ["sw-canvas", "gl-canvas", "scene", "shape", "rect", "circle", "path"]
+}

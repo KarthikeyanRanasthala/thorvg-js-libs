@@ -6,6 +6,7 @@ import {
   TvgPaint,
   AnyThorVGModule,
   Point,
+  PathCommand,
   type PathCommandType,
   type FillRuleType,
   type StrokeCapType,
@@ -32,84 +33,204 @@ export interface Instance {
 
 export interface HostContext {}
 
+/**
+ * RGBA color represented as a tuple of four numbers [R, G, B, A].
+ * Each component should be in the range 0-255.
+ */
 export type Color = [number, number, number, number];
 
+/**
+ * Base transformation properties for positioned elements.
+ */
 export interface TransformProps {
+  /**
+   * X-axis translation in pixels.
+   */
   x?: number;
+
+  /**
+   * Y-axis translation in pixels.
+   */
   y?: number;
+
+  /**
+   * Rotation angle in degrees.
+   */
   rotation?: number;
+
+  /**
+   * Horizontal scale factor.
+   * @default 1
+   */
   scaleX?: number;
+
+  /**
+   * Vertical scale factor.
+   * @default 1
+   */
   scaleY?: number;
 }
 
+/**
+ * Props for the Shape component.
+ * Shapes can contain geometry children (Rect, Circle, Path) to define their appearance.
+ */
 export interface ShapeProps extends TransformProps {
+  /**
+   * Fill color as RGBA tuple [R, G, B, A], each component 0-255.
+   */
   fill?: Color;
+
+  /**
+   * Stroke color as RGBA tuple [R, G, B, A], each component 0-255.
+   */
   stroke?: Color;
+
+  /**
+   * Width of the stroke in pixels.
+   */
   strokeWidth?: number;
+
+  /**
+   * Stroke dash pattern as an array of lengths.
+   * @example [5, 10] creates a 5px dash followed by 10px gap
+   */
   strokeDash?: number[];
+
+  /**
+   * Offset for stroke dash pattern in pixels.
+   */
   strokeDashOffset?: number;
+
+  /**
+   * Cap style for stroke endpoints.
+   */
   strokeCap?: StrokeCapType;
+
+  /**
+   * Join style for stroke corners.
+   */
   strokeJoin?: StrokeJoinType;
+
+  /**
+   * Miter limit for stroke joins.
+   * @default 4
+   */
   strokeMiterlimit?: number;
+
+  /**
+   * Opacity value from 0 (transparent) to 255 (opaque).
+   * @default 255
+   */
   opacity?: number;
+
+  /**
+   * Fill rule for determining shape interior.
+   */
   fillRule?: FillRuleType;
 }
 
-// Geometry child components (add geometry to parent Shape)
+/**
+ * Props for the Rect component.
+ * Must be a child of a Shape component to be rendered.
+ */
 export interface RectProps {
+  /**
+   * X-coordinate of the rectangle's top-left corner.
+   */
   x: number;
+
+  /**
+   * Y-coordinate of the rectangle's top-left corner.
+   */
   y: number;
+
+  /**
+   * Width of the rectangle in pixels.
+   */
   width: number;
+
+  /**
+   * Height of the rectangle in pixels.
+   */
   height: number;
+
+  /**
+   * Horizontal corner radius for rounded rectangles.
+   */
   rx?: number;
+
+  /**
+   * Vertical corner radius for rounded rectangles.
+   */
   ry?: number;
 }
 
+/**
+ * Props for the Circle component.
+ * Must be a child of a Shape component to be rendered.
+ */
 export interface CircleProps {
+  /**
+   * X-coordinate of the circle's center.
+   */
   x: number;
+
+  /**
+   * Y-coordinate of the circle's center.
+   */
   y: number;
+
+  /**
+   * Radius for a perfect circle.
+   */
   radius?: number;
+
+  /**
+   * Horizontal radius for an ellipse.
+   */
   rx?: number;
+
+  /**
+   * Vertical radius for an ellipse.
+   */
   ry?: number;
 }
 
-export type PathCommandMoveTo = {
-  type: "M";
-  x: number;
-  y: number;
-};
-
-export type PathCommandLineTo = {
-  type: "L";
-  x: number;
-  y: number;
-};
-
-export type PathCommandCubicTo = {
-  type: "C";
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  x: number;
-  y: number;
-};
-
-export type PathCommandClose = {
-  type: "Z";
-};
-
-export type PathCommandObject =
-  | PathCommandMoveTo
-  | PathCommandLineTo
-  | PathCommandCubicTo
-  | PathCommandClose;
-
+/**
+ * Props for the Path component.
+ * Must be a child of a Shape component to be rendered.
+ * Matches the appendPath API from the bindings package.
+ */
 export interface PathProps {
-  commands: PathCommandObject[];
+  /**
+   * Array of path command types.
+   * Use PathCommand constants: PathCommand.MoveTo, PathCommand.LineTo, PathCommand.CubicTo, PathCommand.Close
+   * @example [PathCommand.MoveTo, PathCommand.LineTo, PathCommand.Close]
+   */
+  commands: PathCommandType[];
+
+  /**
+   * Array of points corresponding to the commands.
+   * Each command consumes a different number of points:
+   * - MoveTo: 1 point (x, y)
+   * - LineTo: 1 point (x, y)
+   * - CubicTo: 3 points (x1, y1), (x2, y2), (x, y)
+   * - Close: 0 points
+   * @example [{ x: 0, y: 0 }, { x: 100, y: 100 }]
+   */
+  points: Point[];
 }
 
+/**
+ * Props for the Scene component.
+ * Scenes can contain multiple Shape children and other nested Scenes.
+ */
 export interface SceneProps extends TransformProps {
+  /**
+   * Opacity value from 0 (transparent) to 255 (opaque).
+   * @default 255
+   */
   opacity?: number;
 }
 
@@ -122,8 +243,9 @@ export type Props =
   | PathProps
   | SceneProps;
 
-// Re-export for convenience
+// Re-export from bindings for convenience
 export {
+  PathCommand,
   type PathCommandType,
   type FillRuleType,
   type StrokeCapType,

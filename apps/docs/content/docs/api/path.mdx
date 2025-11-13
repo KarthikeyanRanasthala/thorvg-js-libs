@@ -1,0 +1,33 @@
+---
+title: Path
+description: Custom path geometry component
+---
+
+## Path
+
+Custom path geometry component. Must be a child of a [Shape](/docs/api/shape).
+
+### Props
+
+<AutoTypeTable path="../../packages/fiber/src/types.ts" name="PathProps" />
+
+### Notes
+
+- Must be nested inside a Shape component
+- Use `PathCommand` constants: `PathCommand.MoveTo`, `PathCommand.LineTo`, `PathCommand.CubicTo`, `PathCommand.Close`
+- Commands define arbitrary vector paths
+- Useful for complex custom shapes
+- API matches the bindings `appendPath` method
+
+### Example
+
+```tsx
+import { Shape, Path, PathCommand } from 'react-thorvg-fiber';
+
+<Shape fill={[255, 0, 0, 255]}>
+  <Path
+    commands={[PathCommand.MoveTo, PathCommand.LineTo, PathCommand.Close]}
+    points={[{ x: 0, y: 0 }, { x: 100, y: 100 }]}
+  />
+</Shape>
+```

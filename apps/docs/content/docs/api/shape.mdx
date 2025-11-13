@@ -1,0 +1,19 @@
+---
+title: Shape
+description: 2D vector graphics shape component
+---
+
+## Shape
+
+Component for rendering 2D vector graphics with fill and stroke styling.
+
+### Props
+
+<AutoTypeTable path="../../packages/fiber/src/types.ts" name="ShapeProps" />
+
+### Notes
+
+- Must contain geometry children: [Rect](/docs/api/rect), [Circle](/docs/api/circle), or [Path](/docs/api/path)
+- Color format: `[R, G, B, A]` where each value is 0-255
+- Opacity range: 0 (transparent) to 255 (opaque)
+- Supports CSS-like transformations (x, y, rotation, scale)

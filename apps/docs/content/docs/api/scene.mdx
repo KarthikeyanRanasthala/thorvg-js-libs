@@ -1,0 +1,19 @@
+---
+title: Scene
+description: Container component for grouping and transforming shapes
+---
+
+## Scene
+
+Container component for grouping multiple shapes and applying shared transformations.
+
+### Props
+
+<AutoTypeTable path="../../packages/fiber/src/types.ts" name="SceneProps" />
+
+### Notes
+
+- Can contain [Shape](/docs/api/shape) children or other nested Scenes
+- Transforms (x, y, rotation, scale) apply to all children
+- Opacity affects all children
+- Useful for organizing complex graphics hierarchies

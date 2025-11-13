@@ -20,5 +20,11 @@ export type {
   TransformProps,
 } from "./types";
 
-// Re-export PathCommand, FillRule, and Point from bindings
-export { PathCommand, FillRule, type Point } from "bindings";
+// Re-export constants and types from bindings
+export {
+  PathCommand,
+  FillRule,
+  StrokeCap,
+  StrokeJoin,
+  type Point,
+} from "bindings";

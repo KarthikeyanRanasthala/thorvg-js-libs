@@ -1,4 +1,4 @@
-import { Shape, Scene, FillRule, type PathCommandType } from "bindings";
+import { Shape, Scene, FillRule } from "bindings";
 import {
   Props,
   Type,
@@ -182,33 +182,8 @@ export const applyProps = ({
     } else if (type === ElementType.PATH) {
       const pathProps = props as PathProps;
 
-      // Convert PathCommandObject[] to ThorVG's command/point arrays
-      const commands: PathCommandType[] = [];
-      const points: { x: number; y: number }[] = [];
-
-      for (const cmd of pathProps.commands) {
-        switch (cmd.type) {
-          case "M": // MoveTo
-            commands.push(1); // PathCommand.MoveTo
-            points.push({ x: cmd.x, y: cmd.y });
-            break;
-          case "L": // LineTo
-            commands.push(2); // PathCommand.LineTo
-            points.push({ x: cmd.x, y: cmd.y });
-            break;
-          case "C": // CubicTo
-            commands.push(3); // PathCommand.CubicTo
-            points.push({ x: cmd.x1, y: cmd.y1 });
-            points.push({ x: cmd.x2, y: cmd.y2 });
-            points.push({ x: cmd.x, y: cmd.y });
-            break;
-          case "Z": // Close
-            commands.push(0); // PathCommand.Close
-            break;
-        }
-      }
-
-      shape.appendPath(commands, points);
+      // Pass commands and points directly to appendPath
+      shape.appendPath(pathProps.commands, pathProps.points);
     }
   }
 };
