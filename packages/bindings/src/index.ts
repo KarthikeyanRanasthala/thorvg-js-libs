@@ -10,6 +10,10 @@ export {
   StrokeCap,
   StrokeJoin,
   type Point,
+  type PathCommandType,
+  type FillRuleType,
+  type StrokeCapType,
+  type StrokeJoinType,
 } from "./shape.js";
 export { Scene } from "./scene.js";
 export { Accessor, type AccessorCallback, type PaintInfo } from "./accessor.js";

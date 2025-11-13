@@ -26,7 +26,6 @@ import { flushSwCanvasToHtmlCanvas, setupCanvasElement } from "./utils";
 export type SwCanvasProps = ComponentPropsWithoutRef<"canvas"> & {
   width: number;
   height: number;
-  wasmPath?: string;
   devicePixelRatio?: number;
   locateFile?: (path: string, prefix: string) => string;
 };
@@ -35,7 +34,6 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
   children,
   width,
   height,
-  wasmPath,
   devicePixelRatio,
   locateFile,
   ...props
@@ -44,6 +42,7 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
   const rootRef = useRef<OpaqueRoot>(null);
   const thorvgCanvasRef = useRef<ThorVGSwCanvas>(null);
   const reconcilerRef = useRef(createReconciler());
+  const locateFileRef = useRef(locateFile);
 
   const flushToCanvas = useCallback(() => {
     flushSwCanvasToHtmlCanvas(
@@ -56,7 +55,7 @@ export const SwCanvas: FC<PropsWithChildren<SwCanvasProps>> = ({
     (async () => {
       try {
         const module = await SwModuleFactory({
-          locateFile,
+          locateFile: locateFileRef.current,
         });
         const engine = new Engine(module);
         engine.init();

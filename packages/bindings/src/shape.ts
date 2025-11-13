@@ -12,6 +12,8 @@ export const PathCommand = {
   CubicTo: 3,
 } as const;
 
+export type PathCommandType = (typeof PathCommand)[keyof typeof PathCommand];
+
 /**
  * Fill rule determines how the interior of a shape is determined
  */
@@ -19,6 +21,8 @@ export const FillRule = {
   NonZero: 0,
   EvenOdd: 1,
 } as const;
+
+export type FillRuleType = (typeof FillRule)[keyof typeof FillRule];
 
 /**
  * Stroke cap style for open path ends
@@ -29,6 +33,8 @@ export const StrokeCap = {
   Square: 2, // Stroke extends with a square cap
 } as const;
 
+export type StrokeCapType = (typeof StrokeCap)[keyof typeof StrokeCap];
+
 /**
  * Stroke join style for path corners
  */
@@ -37,6 +43,8 @@ export const StrokeJoin = {
   Round: 1, // Rounded corner
   Miter: 2, // Sharp corner (limited by miter limit)
 } as const;
+
+export type StrokeJoinType = (typeof StrokeJoin)[keyof typeof StrokeJoin];
 
 /**
  * A point in 2D space
@@ -155,7 +163,7 @@ export class Shape extends Paint {
     return this;
   }
 
-  appendPath(commands: PathCommand[], points: Point[]): this {
+  appendPath(commands: PathCommandType[], points: Point[]): this {
     // Allocate memory for commands array
     const cmdCount = commands.length;
     const cmdPtr = this.module._malloc(cmdCount);
@@ -195,7 +203,7 @@ export class Shape extends Paint {
     return this;
   }
 
-  fillRule(rule: FillRule): this {
+  fillRule(rule: FillRuleType): this {
     const result = this.module._tvg_shape_set_fill_rule(this.handle, rule);
     checkResult(result);
     return this;
@@ -225,13 +233,13 @@ export class Shape extends Paint {
     return this;
   }
 
-  strokeCap(cap: StrokeCap): this {
+  strokeCap(cap: StrokeCapType): this {
     const result = this.module._tvg_shape_set_stroke_cap(this.handle, cap);
     checkResult(result);
     return this;
   }
 
-  strokeJoin(join: StrokeJoin): this {
+  strokeJoin(join: StrokeJoinType): this {
     const result = this.module._tvg_shape_set_stroke_join(this.handle, join);
     checkResult(result);
     return this;

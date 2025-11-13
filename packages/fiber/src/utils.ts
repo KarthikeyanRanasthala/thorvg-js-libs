@@ -1,4 +1,4 @@
-import { Shape, Scene, FillRule, PathCommand, StrokeCap, StrokeJoin } from "bindings";
+import { Shape, Scene, FillRule, type PathCommandType } from "bindings";
 import {
   Props,
   Type,
@@ -118,10 +118,7 @@ export const applyProps = ({
 
     // Apply stroke dash
     if (shapeProps.strokeDash && shapeProps.strokeDash.length > 0) {
-      shape.strokeDash(
-        shapeProps.strokeDash,
-        shapeProps.strokeDashOffset ?? 0
-      );
+      shape.strokeDash(shapeProps.strokeDash, shapeProps.strokeDashOffset ?? 0);
     }
 
     // Apply stroke cap
@@ -141,9 +138,7 @@ export const applyProps = ({
 
     // Apply fill rule
     if (shapeProps.fillRule) {
-      shape.fillRule(
-        shapeProps.fillRule === "evenodd" ? FillRule.EvenOdd : FillRule.NonZero
-      );
+      shape.fillRule(shapeProps.fillRule);
     }
 
     // Apply transform
@@ -188,7 +183,7 @@ export const applyProps = ({
       const pathProps = props as PathProps;
 
       // Convert PathCommandObject[] to ThorVG's command/point arrays
-      const commands: number[] = [];
+      const commands: PathCommandType[] = [];
       const points: { x: number; y: number }[] = [];
 
       for (const cmd of pathProps.commands) {
@@ -213,7 +208,7 @@ export const applyProps = ({
         }
       }
 
-      shape.appendPath(commands as PathCommand[], points);
+      shape.appendPath(commands, points);
     }
   }
 };

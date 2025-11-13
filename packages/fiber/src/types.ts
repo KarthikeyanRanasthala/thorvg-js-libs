@@ -5,11 +5,11 @@ import {
   GlCanvas as ThorVGGlCanvas,
   TvgPaint,
   AnyThorVGModule,
-  PathCommand,
-  FillRule,
-  StrokeCap,
-  StrokeJoin,
   Point,
+  type PathCommandType,
+  type FillRuleType,
+  type StrokeCapType,
+  type StrokeJoinType,
 } from "bindings";
 
 export type ThorVGCanvas = ThorVGSwCanvas | ThorVGGlCanvas;
@@ -48,11 +48,11 @@ export interface ShapeProps extends TransformProps {
   strokeWidth?: number;
   strokeDash?: number[];
   strokeDashOffset?: number;
-  strokeCap?: StrokeCap;
-  strokeJoin?: StrokeJoin;
+  strokeCap?: StrokeCapType;
+  strokeJoin?: StrokeJoinType;
   strokeMiterlimit?: number;
   opacity?: number;
-  fillRule?: "nonzero" | "evenodd";
+  fillRule?: FillRuleType;
 }
 
 // Geometry child components (add geometry to parent Shape)
@@ -123,4 +123,10 @@ export type Props =
   | SceneProps;
 
 // Re-export for convenience
-export { PathCommand, FillRule, StrokeCap, StrokeJoin, type Point };
+export {
+  type PathCommandType,
+  type FillRuleType,
+  type StrokeCapType,
+  type StrokeJoinType,
+  type Point,
+};
