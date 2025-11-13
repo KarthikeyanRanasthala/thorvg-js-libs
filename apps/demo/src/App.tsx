@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { gsap } from "gsap";
 
-import { SwCanvas, GlCanvas, Rect } from "react-thorvg-fiber";
+import { SwCanvas, GlCanvas, Shape, Rect } from "react-thorvg-fiber";
 
 import swWasmUrl from "react-thorvg-fiber/thorvg-sw.wasm?url";
 import glWasmUrl from "react-thorvg-fiber/thorvg-gl.wasm?url";
@@ -87,7 +87,7 @@ function App() {
 
   useEffect(() => {
     // Use GSAP to continuously rotate shapes with a 10s loop
-    gsap.to(rotationRef.current, {
+    const tween = gsap.to(rotationRef.current, {
       value: 360,
       duration: 10,
       repeat: -1,
@@ -96,6 +96,11 @@ function App() {
         setRotation(rotationRef.current.value);
       },
     });
+
+    // Cleanup: kill the animation when component unmounts
+    return () => {
+      tween.kill();
+    };
   }, []);
 
   const locateSwFile = useCallback(() => {
@@ -119,15 +124,20 @@ function App() {
             locateFile={locateSwFile}
           >
             {shapeData.map((shape) => (
-              <Rect
+              <Shape
                 key={shape.key}
                 x={shape.x}
                 y={shape.y}
-                width={SHAPE_SIZE}
-                height={SHAPE_SIZE}
                 fill={shape.color}
                 rotation={rotation}
-              />
+              >
+                <Rect
+                  x={-SHAPE_SIZE / 2}
+                  y={-SHAPE_SIZE / 2}
+                  width={SHAPE_SIZE}
+                  height={SHAPE_SIZE}
+                />
+              </Shape>
             ))}
           </SwCanvas>
         </div>
@@ -141,19 +151,25 @@ function App() {
             locateFile={locateGlFile}
           >
             {shapeData.map((shape) => (
-              <Rect
+              <Shape
                 key={shape.key}
                 x={shape.x}
                 y={shape.y}
-                width={SHAPE_SIZE}
-                height={SHAPE_SIZE}
                 fill={shape.color}
                 rotation={rotation}
-              />
+              >
+                <Rect
+                  x={-SHAPE_SIZE / 2}
+                  y={-SHAPE_SIZE / 2}
+                  width={SHAPE_SIZE}
+                  height={SHAPE_SIZE}
+                />
+              </Shape>
             ))}
           </GlCanvas>
         </div>
       </div>
+
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}

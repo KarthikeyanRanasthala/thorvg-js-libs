@@ -25,7 +25,6 @@ import { setupCanvasElement } from "./utils";
 export type GlCanvasProps = ComponentPropsWithoutRef<"canvas"> & {
   width: number;
   height: number;
-  wasmPath?: string;
   devicePixelRatio?: number;
   locateFile?: (path: string, prefix: string) => string;
   id: string;
@@ -35,7 +34,6 @@ export const GlCanvas: FC<PropsWithChildren<GlCanvasProps>> = ({
   children,
   width,
   height,
-  wasmPath,
   devicePixelRatio,
   id,
   locateFile,
@@ -45,12 +43,13 @@ export const GlCanvas: FC<PropsWithChildren<GlCanvasProps>> = ({
   const rootRef = useRef<OpaqueRoot>(null);
   const thorvgCanvasRef = useRef<ThorVGGlCanvas>(null);
   const reconcilerRef = useRef(createReconciler());
+  const locateFileRef = useRef(locateFile);
 
   useEffect(() => {
     (async () => {
       try {
         const module = await GlModuleFactory({
-          locateFile,
+          locateFile: locateFileRef.current,
         });
         const engine = new Engine(module);
         engine.init();
@@ -92,7 +91,7 @@ export const GlCanvas: FC<PropsWithChildren<GlCanvasProps>> = ({
         reconciler: reconcilerRef.current,
       });
     };
-  }, [wasmPath, width, height, devicePixelRatio, id]);
+  }, [width, height, devicePixelRatio, id]);
 
   useEffect(() => {
     if (

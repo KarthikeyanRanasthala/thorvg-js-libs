@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Scene component > matches snapshot 1`] = `
+{
+  "maxDepth": 0,
+  "nodesByType": {
+    "1": 2,
+    "2": 3,
+  },
+  "totalNodes": 5,
+}
+`;

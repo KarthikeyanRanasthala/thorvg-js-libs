@@ -1,16 +1,21 @@
-import { Shape, Scene } from "bindings";
+import { Shape, Scene, FillRule, type PathCommandType } from "bindings";
 import {
   Props,
   Type,
   RectProps,
   CircleProps,
-  GroupProps,
-  CircleWithRadius,
-  EllipseWithRadii,
+  PathProps,
+  ShapeProps,
+  SceneProps,
 } from "./types";
-import { RESERVED_PROPS, STYLE_PROPS } from "./constants";
+import { RESERVED_PROPS, ElementType } from "./constants";
 import { buildTransformMatrix } from "./matrix";
 
+/**
+ * Shallow comparison of props using reference equality.
+ * Similar to React DOM's approach - only checks if references changed.
+ * For objects/arrays to be considered "changed", they must have different references.
+ */
 export const diffProps = (
   oldProps: Props,
   newProps: Props
@@ -18,14 +23,27 @@ export const diffProps = (
   const changedProps: Partial<Props> = {};
   let diffExists = false;
 
+  // Check for new or changed props (shallow equality check)
   for (const key in newProps) {
     if (RESERVED_PROPS.has(key)) continue;
 
-    // @ts-ignore
+    // @ts-ignore - Use reference equality (===) like React DOM
     if (oldProps[key] !== newProps[key]) {
       diffExists = true;
       // @ts-ignore
       changedProps[key] = newProps[key];
+    }
+  }
+
+  // Check for removed props
+  for (const key in oldProps) {
+    if (RESERVED_PROPS.has(key)) continue;
+
+    // @ts-ignore
+    if (!(key in newProps)) {
+      diffExists = true;
+      // @ts-ignore - undefined indicates prop was removed
+      changedProps[key] = undefined;
     }
   }
 
@@ -49,60 +67,32 @@ export const applyProps = ({
   type: Type;
   props: Props;
 }) => {
-  if (type === "group" && scene) {
-    const groupProps = props as GroupProps;
+  if (type === ElementType.SCENE && scene) {
+    const sceneProps = props as SceneProps;
 
     // Build transform matrix from props
     const matrix = buildTransformMatrix(
-      groupProps.x ?? DEFAULT_POSITION,
-      groupProps.y ?? DEFAULT_POSITION,
-      groupProps.rotation ?? DEFAULT_ROTATION,
-      groupProps.scaleX ?? DEFAULT_SCALE,
-      groupProps.scaleY ?? DEFAULT_SCALE
+      sceneProps.x ?? DEFAULT_POSITION,
+      sceneProps.y ?? DEFAULT_POSITION,
+      sceneProps.rotation ?? DEFAULT_ROTATION,
+      sceneProps.scaleX ?? DEFAULT_SCALE,
+      sceneProps.scaleY ?? DEFAULT_SCALE
     );
 
     scene.setTransform(matrix);
 
-    if (Object.hasOwn(groupProps, "opacity")) {
-      scene.opacity(groupProps.opacity ?? DEFAULT_OPACITY);
+    if (Object.hasOwn(sceneProps, "opacity")) {
+      scene.opacity(sceneProps.opacity ?? DEFAULT_OPACITY);
     }
 
     return;
   }
-  // Handle shapes (rect, circle)
-  if (shape) {
-    if (Object.keys(props).some((key) => !STYLE_PROPS.has(key))) {
-      shape.reset();
-    }
 
-    if (type === "rect") {
-      const rectProps = props as RectProps;
+  // Handle Shape component (parent that holds geometry)
+  if (type === ElementType.SHAPE && shape) {
+    const shapeProps = props as ShapeProps;
 
-      shape.appendRect(
-        -rectProps.width / 2,
-        -rectProps.height / 2,
-        rectProps.width,
-        rectProps.height
-      );
-    }
-
-    if (type === "circle") {
-      const circleProps = props as CircleProps;
-
-      const rx =
-        (circleProps as CircleWithRadius).radius ??
-        (circleProps as EllipseWithRadii).rx ??
-        0;
-      const ry =
-        (circleProps as CircleWithRadius).radius ??
-        (circleProps as EllipseWithRadii).ry ??
-        0;
-
-      shape.appendCircle(0, 0, rx, ry);
-    }
-
-    const shapeProps = props as RectProps | CircleProps;
-
+    // Apply fill color
     if (shapeProps.fill) {
       shape.fill(
         shapeProps.fill[0],
@@ -112,6 +102,7 @@ export const applyProps = ({
       );
     }
 
+    // Apply stroke
     if (shapeProps.stroke) {
       shape.stroke(
         shapeProps.stroke[0],
@@ -125,6 +116,32 @@ export const applyProps = ({
       shape.strokeWidth(shapeProps.strokeWidth ?? DEFAULT_STROKE_WIDTH);
     }
 
+    // Apply stroke dash
+    if (shapeProps.strokeDash && shapeProps.strokeDash.length > 0) {
+      shape.strokeDash(shapeProps.strokeDash, shapeProps.strokeDashOffset ?? 0);
+    }
+
+    // Apply stroke cap
+    if (Object.hasOwn(shapeProps, "strokeCap")) {
+      shape.strokeCap(shapeProps.strokeCap!);
+    }
+
+    // Apply stroke join
+    if (Object.hasOwn(shapeProps, "strokeJoin")) {
+      shape.strokeJoin(shapeProps.strokeJoin!);
+    }
+
+    // Apply stroke miterlimit
+    if (Object.hasOwn(shapeProps, "strokeMiterlimit")) {
+      shape.strokeMiterlimit(shapeProps.strokeMiterlimit ?? 4);
+    }
+
+    // Apply fill rule
+    if (shapeProps.fillRule) {
+      shape.fillRule(shapeProps.fillRule);
+    }
+
+    // Apply transform
     const matrix = buildTransformMatrix(
       shapeProps.x ?? DEFAULT_POSITION,
       shapeProps.y ?? DEFAULT_POSITION,
@@ -134,8 +151,64 @@ export const applyProps = ({
     );
     shape.setTransform(matrix);
 
+    // Apply opacity
     if (Object.hasOwn(shapeProps, "opacity")) {
       shape.opacity(shapeProps.opacity ?? DEFAULT_OPACITY);
+    }
+
+    return;
+  }
+
+  // Handle geometry children (rect, circle, path)
+  if (shape) {
+    if (type === ElementType.RECT) {
+      const rectProps = props as RectProps;
+
+      shape.appendRect(
+        rectProps.x,
+        rectProps.y,
+        rectProps.width,
+        rectProps.height,
+        rectProps.rx ?? 0,
+        rectProps.ry ?? 0
+      );
+    } else if (type === ElementType.CIRCLE) {
+      const circleProps = props as CircleProps;
+
+      const rx = circleProps.radius ?? circleProps.rx ?? 0;
+      const ry = circleProps.radius ?? circleProps.ry ?? 0;
+
+      shape.appendCircle(circleProps.x, circleProps.y, rx, ry);
+    } else if (type === ElementType.PATH) {
+      const pathProps = props as PathProps;
+
+      // Convert PathCommandObject[] to ThorVG's command/point arrays
+      const commands: PathCommandType[] = [];
+      const points: { x: number; y: number }[] = [];
+
+      for (const cmd of pathProps.commands) {
+        switch (cmd.type) {
+          case "M": // MoveTo
+            commands.push(1); // PathCommand.MoveTo
+            points.push({ x: cmd.x, y: cmd.y });
+            break;
+          case "L": // LineTo
+            commands.push(2); // PathCommand.LineTo
+            points.push({ x: cmd.x, y: cmd.y });
+            break;
+          case "C": // CubicTo
+            commands.push(3); // PathCommand.CubicTo
+            points.push({ x: cmd.x1, y: cmd.y1 });
+            points.push({ x: cmd.x2, y: cmd.y2 });
+            points.push({ x: cmd.x, y: cmd.y });
+            break;
+          case "Z": // Close
+            commands.push(0); // PathCommand.Close
+            break;
+        }
+      }
+
+      shape.appendPath(commands, points);
     }
   }
 };

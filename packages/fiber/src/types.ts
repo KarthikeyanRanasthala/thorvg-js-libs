@@ -5,6 +5,11 @@ import {
   GlCanvas as ThorVGGlCanvas,
   TvgPaint,
   AnyThorVGModule,
+  Point,
+  type PathCommandType,
+  type FillRuleType,
+  type StrokeCapType,
+  type StrokeJoinType,
 } from "bindings";
 
 export type ThorVGCanvas = ThorVGSwCanvas | ThorVGGlCanvas;
@@ -16,10 +21,13 @@ export interface Container {
 }
 
 export interface Instance {
-  paint: TvgPaint; // Unified handle for Shape or Scene
+  paint?: TvgPaint; // Unified handle for Shape or Scene (undefined for geometry children)
   shape?: Shape; // Keep reference for shape-specific operations
   scene?: Scene; // Keep reference for scene-specific operations
   type: Type;
+  props?: Props; // Store props for geometry children (rect, circle, path)
+  geometryChildren?: Instance[]; // Track geometry children (rect, circle, path) for Shapes
+  parentInstance?: Instance; // Reference to parent Shape instance for geometry children
 }
 
 export interface HostContext {}
@@ -34,33 +42,91 @@ export interface TransformProps {
   scaleY?: number;
 }
 
-export interface BaseShapeProps extends TransformProps {
+export interface ShapeProps extends TransformProps {
   fill?: Color;
   stroke?: Color;
   strokeWidth?: number;
+  strokeDash?: number[];
+  strokeDashOffset?: number;
+  strokeCap?: StrokeCapType;
+  strokeJoin?: StrokeJoinType;
+  strokeMiterlimit?: number;
   opacity?: number;
+  fillRule?: FillRuleType;
 }
 
-export interface RectProps extends BaseShapeProps {
+// Geometry child components (add geometry to parent Shape)
+export interface RectProps {
+  x: number;
+  y: number;
   width: number;
   height: number;
+  rx?: number;
+  ry?: number;
 }
 
-export interface CircleWithRadius extends BaseShapeProps {
-  radius: number;
+export interface CircleProps {
+  x: number;
+  y: number;
+  radius?: number;
+  rx?: number;
+  ry?: number;
 }
 
-export interface EllipseWithRadii extends BaseShapeProps {
-  rx: number;
-  ry: number;
+export type PathCommandMoveTo = {
+  type: "M";
+  x: number;
+  y: number;
+};
+
+export type PathCommandLineTo = {
+  type: "L";
+  x: number;
+  y: number;
+};
+
+export type PathCommandCubicTo = {
+  type: "C";
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  x: number;
+  y: number;
+};
+
+export type PathCommandClose = {
+  type: "Z";
+};
+
+export type PathCommandObject =
+  | PathCommandMoveTo
+  | PathCommandLineTo
+  | PathCommandCubicTo
+  | PathCommandClose;
+
+export interface PathProps {
+  commands: PathCommandObject[];
 }
 
-export type CircleProps = CircleWithRadius | EllipseWithRadii;
-
-export interface GroupProps extends TransformProps {
+export interface SceneProps extends TransformProps {
   opacity?: number;
 }
 
-export type Type = "rect" | "circle" | "group";
+export type Type = "shape" | "rect" | "circle" | "path" | "scene";
 
-export type Props = RectProps | CircleProps | GroupProps;
+export type Props =
+  | ShapeProps
+  | RectProps
+  | CircleProps
+  | PathProps
+  | SceneProps;
+
+// Re-export for convenience
+export {
+  type PathCommandType,
+  type FillRuleType,
+  type StrokeCapType,
+  type StrokeJoinType,
+  type Point,
+};

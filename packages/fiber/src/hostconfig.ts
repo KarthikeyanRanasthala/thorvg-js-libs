@@ -4,6 +4,7 @@ import { logger } from "./logger";
 import { Shape, Scene } from "bindings";
 import { applyProps } from "./utils";
 import { Container, HostContext, Instance, Props, Type } from "./types";
+import { ElementType } from "./constants";
 
 class NotImplementedError extends Error {
   constructor(message: string) {
@@ -11,6 +12,31 @@ class NotImplementedError extends Error {
     this.name = "NotImplementedError";
   }
 }
+
+const isGeometryType = (type: Type): boolean => {
+  return (
+    type === ElementType.RECT ||
+    type === ElementType.CIRCLE ||
+    type === ElementType.PATH
+  );
+};
+
+/**
+ * Reset a shape and reapply all its geometry children in order.
+ * This is used whenever the geometry children change (add, remove, update, reorder).
+ */
+const resetAndReapplyGeometry = (instance: Instance): void => {
+  if (!instance.shape) return;
+
+  instance.shape.reset();
+  for (const child of instance.geometryChildren || []) {
+    applyProps({
+      shape: instance.shape,
+      type: child.type,
+      props: child.props || {},
+    });
+  }
+};
 
 export const hostConfig: HostConfig<
   Type,
@@ -30,27 +56,48 @@ export const hostConfig: HostConfig<
 > = {
   supportsMutation: true,
   supportsPersistence: false,
-  createInstance: (type, props, containerInfo) => {
+  createInstance: (type, props, container) => {
     logger.log("createInstance", type, props);
 
-    if (type === "group") {
-      const scene = new Scene(containerInfo.module);
+    if (type === ElementType.SCENE) {
+      const scene = new Scene(container.module);
       applyProps({ scene, type, props });
+
       return { paint: scene.handle, scene, type };
-    } else {
-      const shape = new Shape(containerInfo.module);
+    } else if (type === ElementType.SHAPE) {
+      const shape = new Shape(container.module);
       applyProps({ shape, type, props });
-      return { paint: shape.handle, shape, type };
+
+      return { paint: shape.handle, shape, type, geometryChildren: [] };
+    } else if (isGeometryType(type)) {
+      // Geometry children don't create their own paint objects
+      // They will be applied to parent Shape when appended
+      return { type, props };
+    } else {
+      throw new NotImplementedError(`Unsupported type: ${type}`);
     }
   },
   createTextInstance: () => {
     logger.log("createTextInstance");
     throw new NotImplementedError("createTextInstance is not implemented");
   },
-  appendInitialChild: (parent: Instance, child: Instance) => {
-    logger.log("appendInitialChild", parent.type, child.type);
-    if (parent.scene) {
-      parent.scene.push(child.paint);
+  appendInitialChild: (parentInstance: Instance, childInstance: Instance) => {
+    logger.log("appendInitialChild");
+
+    // If parent is a Shape and child is geometry, track and apply geometry to the shape
+    if (parentInstance.shape && isGeometryType(childInstance.type)) {
+      childInstance.parentInstance = parentInstance;
+      parentInstance.geometryChildren = parentInstance.geometryChildren || [];
+      parentInstance.geometryChildren.push(childInstance);
+
+      applyProps({
+        shape: parentInstance.shape,
+        type: childInstance.type,
+        props: childInstance.props || {},
+      });
+    } else if (parentInstance.scene && childInstance.paint) {
+      // Otherwise, if parent is a scene, push child paint object
+      parentInstance.scene.push(childInstance.paint);
     }
   },
   finalizeInitialChildren: () => {
@@ -77,12 +124,12 @@ export const hostConfig: HostConfig<
     logger.log("prepareForCommit");
     return null;
   },
-  resetAfterCommit: (containerInfo) => {
+  resetAfterCommit: (container) => {
     logger.log("resetAfterCommit");
 
-    containerInfo.canvas.update();
-    containerInfo.canvas.draw();
-    containerInfo.canvas.sync();
+    container.canvas.update();
+    container.canvas.draw();
+    container.canvas.sync();
   },
   preparePortalMount: () => {
     logger.log("preparePortalMount");
@@ -117,39 +164,89 @@ export const hostConfig: HostConfig<
   detachDeletedInstance: () => {
     logger.log("detachDeletedInstance");
   },
-  appendChild: (parent: Instance, child: Instance) => {
-    logger.log("appendChild", parent.type, child.type);
-    if (parent.scene) {
-      parent.scene.push(child.paint);
+  appendChild: (parentInstance: Instance, childInstance: Instance) => {
+    logger.log("appendChild");
+
+    // If parent is a Shape and child is geometry, track child and reset+reapply all geometry
+    if (parentInstance.shape && isGeometryType(childInstance.type)) {
+      childInstance.parentInstance = parentInstance;
+      parentInstance.geometryChildren = parentInstance.geometryChildren || [];
+      parentInstance.geometryChildren.push(childInstance);
+      resetAndReapplyGeometry(parentInstance);
+    } else if (parentInstance.scene && childInstance.paint) {
+      // Otherwise, if parent is a scene, push child paint object
+      parentInstance.scene.push(childInstance.paint);
     }
   },
-  appendChildToContainer: (containerInfo: Container, child: Instance) => {
-    logger.log("appendChildToContainer", child.type);
-    containerInfo.rootScene.push(child.paint);
+  appendChildToContainer: (container: Container, childInstance: Instance) => {
+    logger.log("appendChildToContainer");
+    if (childInstance.paint) {
+      container.rootScene.push(childInstance.paint);
+    }
   },
-  insertBefore: (parent: Instance, child: Instance, beforeChild: Instance) => {
-    logger.log("insertBefore", parent.type, child.type, beforeChild.type);
-    if (parent.scene) {
-      parent.scene.insertBefore(child.paint, beforeChild.paint);
+  insertBefore: (
+    parentInstance: Instance,
+    childInstance: Instance,
+    beforeChildInstance: Instance
+  ) => {
+    logger.log("insertBefore");
+
+    // If parent is a Shape and child is geometry, insert at correct position and reset+reapply all geometry
+    if (parentInstance.shape && isGeometryType(childInstance.type)) {
+      childInstance.parentInstance = parentInstance;
+      parentInstance.geometryChildren = parentInstance.geometryChildren || [];
+
+      const beforeIndex =
+        parentInstance.geometryChildren.indexOf(beforeChildInstance);
+      if (beforeIndex !== -1) {
+        parentInstance.geometryChildren.splice(beforeIndex, 0, childInstance);
+      } else {
+        parentInstance.geometryChildren.push(childInstance);
+      }
+
+      resetAndReapplyGeometry(parentInstance);
+    } else if (
+      parentInstance.scene &&
+      childInstance.paint &&
+      beforeChildInstance.paint
+    ) {
+      parentInstance.scene.insertBefore(
+        childInstance.paint,
+        beforeChildInstance.paint
+      );
     }
   },
   insertInContainerBefore: (
-    containerInfo: Container,
-    child: Instance,
-    beforeChild: Instance
+    container: Container,
+    childInstance: Instance,
+    beforeChildInstance: Instance
   ) => {
-    logger.log("insertInContainerBefore", child.type, beforeChild.type);
-    containerInfo.rootScene.insertBefore(child.paint, beforeChild.paint);
-  },
-  removeChild: (parent: Instance, child: Instance) => {
-    logger.log("removeChild", parent.type, child.type);
-    if (parent.scene) {
-      parent.scene.remove(child.paint);
+    logger.log("insertInContainerBefore");
+    if (childInstance.paint && beforeChildInstance.paint) {
+      container.rootScene.insertBefore(
+        childInstance.paint,
+        beforeChildInstance.paint
+      );
     }
   },
-  removeChildFromContainer: (containerInfo: Container, child: Instance) => {
-    logger.log("removeChildFromContainer", child.type);
-    containerInfo.rootScene.remove(child.paint);
+  removeChild: (parentInstance: Instance, childInstance: Instance) => {
+    logger.log("removeChild");
+
+    // If parent is a Shape and child is geometry, remove from tracking and reset+reapply remaining geometry
+    if (parentInstance.shape && isGeometryType(childInstance.type)) {
+      parentInstance.geometryChildren =
+        parentInstance.geometryChildren?.filter((c) => c !== childInstance) ||
+        [];
+      resetAndReapplyGeometry(parentInstance);
+    } else if (parentInstance.scene && childInstance.paint) {
+      parentInstance.scene.remove(childInstance.paint);
+    }
+  },
+  removeChildFromContainer: (container: Container, childInstance: Instance) => {
+    logger.log("removeChildFromContainer");
+    if (childInstance.paint) {
+      container.rootScene.remove(childInstance.paint);
+    }
   },
   resetTextContent: () => {
     logger.log("resetTextContent");
@@ -160,8 +257,21 @@ export const hostConfig: HostConfig<
   commitMount: () => {
     logger.log("commitMount");
   },
-  commitUpdate: (instance, type, _, nextProps) => {
-    logger.log("commitUpdate", type);
+  commitUpdate: (instance, type, oldProps, nextProps) => {
+    logger.log("commitUpdate");
+
+    // For geometry children, check if props actually changed before resetting
+    if (isGeometryType(instance.type)) {
+      instance.props = nextProps;
+
+      // Trigger parent shape reset and reapply all geometry
+      const parentInstance = instance.parentInstance;
+      if (parentInstance) {
+        resetAndReapplyGeometry(parentInstance);
+      }
+
+      return;
+    }
 
     applyProps({
       shape: instance.shape,
@@ -170,9 +280,9 @@ export const hostConfig: HostConfig<
       props: nextProps,
     });
   },
-  clearContainer: (containerInfo: Container) => {
+  clearContainer: (container: Container) => {
     logger.log("clearContainer");
-    containerInfo.rootScene.remove(null);
+    container.rootScene.remove(null);
   },
   supportsHydration: false,
   NotPendingTransition: null,
