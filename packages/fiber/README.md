@@ -1,98 +1,21 @@
 # react-thorvg-fiber
 
-A React renderer for ThorVG, enabling declarative 2D vector graphics with high performance rendering.
+![NPM Version](https://img.shields.io/npm/v/react-thorvg-fiber?style=for-the-badge)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![WebAssembly](https://img.shields.io/badge/webassembly-%23654FF0.svg?style=for-the-badge&logo=webassembly&logoColor=white)
+![WebGL](https://img.shields.io/badge/WebGL-990000?logo=webgl&logoColor=white&style=for-the-badge)
 
-## Installation
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/KarthikeyanRanasthala/thorvg-js-libs)
 
-```bash
-npm install react-thorvg-fiber
-# or
-pnpm add react-thorvg-fiber
-```
+A React renderer for [ThorVG](https://www.thorvg.org/), enabling declarative 2D vector graphics with high-performance rendering powered by WebAssembly. This gives you the full performance of ThorVG in the browser, with the developer experience of React.
 
-## Usage
+## Overview
 
-```jsx
-import { SwCanvas, Rect, Circle, Group } from "react-thorvg-fiber";
-import wasmUrl from "react-thorvg-fiber/thorvg-sw.wasm?url";
+- **Builds native ThorVG bindings**: Compiles the ThorVG C++ library to WebAssembly with custom JavaScript bindings, providing direct access to ThorVG's powerful vector graphics engine
+- **React renderer**: Provides a declarative React API that wraps these bindings, enabling you to build vector graphics with React components
+- **Multiple rendering backends**: Supports both software (Canvas 2D) and hardware-accelerated (WebGL) rendering
 
-function App() {
-  return (
-    <SwCanvas width={500} height={500} wasmPath={wasmUrl}>
-      <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
-      <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
-      <Group x={300} y={300} rotation={45}>
-        <Rect x={-25} y={-25} width={50} height={50} fill={[0, 255, 0, 255]} />
-      </Group>
-    </SwCanvas>
-  );
-}
-```
+## Documentation
 
-## Components
-
-### SwCanvas
-
-The root container for ThorVG software rendering.
-
-**Props:**
-
-- `width`: Canvas width in pixels
-- `height`: Canvas height in pixels
-- `wasmPath`: Path to the ThorVG SW WASM binary (optional)
-- `devicePixelRatio`: Device pixel ratio (optional)
-- `locateFile`: Custom file locator function (optional)
-
-### GlCanvas
-
-The root container for ThorVG WebGL rendering.
-
-**Props:**
-
-- `width`: Canvas width in pixels
-- `height`: Canvas height in pixels
-- `id`: Unique ID for the canvas element (required for WebGL)
-- `wasmPath`: Path to the ThorVG GL WASM binary (optional)
-- `devicePixelRatio`: Device pixel ratio (optional)
-- `locateFile`: Custom file locator function (optional)
-
-### Rect
-
-Renders a rectangle.
-
-**Props:**
-
-- `x`, `y`: Position
-- `width`, `height`: Dimensions
-- `fill`: RGBA color array `[r, g, b, a]`
-- `stroke`: RGBA color array for border
-- `strokeWidth`: Border width
-
-### Circle
-
-Renders an ellipse/circle.
-
-**Props:**
-
-- `cx`, `cy`: Center position
-- `rx`, `ry`: Horizontal and vertical radius
-- `fill`: RGBA color array `[r, g, b, a]`
-- `stroke`: RGBA color array for border
-- `strokeWidth`: Border width
-
-### Group
-
-Container for transforming multiple shapes together.
-
-**Props:**
-
-- `x`, `y`: Translation
-- `rotation`: Rotation in degrees
-- `scale`: Uniform scale factor
-- `opacity`: Group opacity (0-1)
-
-## Features
-
-- Automatic DPR (Device Pixel Ratio) support for crisp rendering on high-DPI displays
-- React-style declarative API
-- Full TypeScript support
+For complete documentation, examples, and API reference, visit: [https://react-thorvg-fiber.vercel.app](https://react-thorvg-fiber.vercel.app)

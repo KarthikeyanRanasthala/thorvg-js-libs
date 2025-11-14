@@ -73,28 +73,28 @@ React ThorVG Fiber provides two canvas components: `SwCanvas` (software renderin
 ### SwCanvas (Software Rendering)
 
 **Use SwCanvas when:**
+
 - You need maximum compatibility across all browsers and devices
-- You're rendering simple to moderately complex scenes
 - WebGL is not available or you want to avoid WebGL dependencies
 
 **Characteristics:**
+
 - CPU-based rendering
 - Works everywhere, including environments without WebGL
-- May be slower for very complex scenes with many shapes
-- No special requirements
 
 ### GlCanvas (WebGL Rendering)
 
 **Use GlCanvas when:**
+
 - You need maximum performance for complex scenes
 - You're rendering many shapes or complex graphics
 - WebGL is available in your target environment
 
 **Characteristics:**
+
 - GPU-accelerated rendering via WebGL
 - Significantly faster for complex scenes
 - Requires WebGL support in the browser
-- Requires a unique `id` prop for WebGL context binding
 
 ## Basic Usage
 
@@ -128,7 +128,6 @@ function App() {
 
 import { useCallback } from "react";
 import { SwCanvas, Rect, Circle } from "react-thorvg-fiber";
-// @ts-expect-error - WASM import
 import wasmUrl from "react-thorvg-fiber/thorvg-sw.wasm";
 
 function App() {
@@ -160,12 +159,7 @@ function App() {
   }, []);
 
   return (
-    <GlCanvas 
-      id="my-canvas"
-      width={500} 
-      height={500} 
-      locateFile={locateFile}
-    >
+    <GlCanvas id="my-canvas" width={500} height={500} locateFile={locateFile}>
       <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
       <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
     </GlCanvas>
@@ -180,7 +174,6 @@ function App() {
 
 import { useCallback } from "react";
 import { GlCanvas, Rect, Circle } from "react-thorvg-fiber";
-// @ts-expect-error - WASM import
 import wasmUrl from "react-thorvg-fiber/thorvg-gl.wasm";
 
 function App() {
@@ -189,12 +182,7 @@ function App() {
   }, []);
 
   return (
-    <GlCanvas 
-      id="my-canvas"
-      width={500} 
-      height={500} 
-      locateFile={locateFile}
-    >
+    <GlCanvas id="my-canvas" width={500} height={500} locateFile={locateFile}>
       <Rect x={50} y={50} width={100} height={100} fill={[255, 0, 0, 255]} />
       <Circle cx={250} cy={250} rx={50} ry={50} fill={[0, 0, 255, 255]} />
     </GlCanvas>
@@ -207,4 +195,3 @@ function App() {
 - Explore [Examples](/docs/examples) to see what's possible
 - Check the [API Reference](/docs/api) for detailed component documentation
 - Learn about shapes, transforms, and scenes in the examples
-

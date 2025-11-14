@@ -2,9 +2,6 @@ import { Paint } from "./paint.js";
 import { checkResult } from "./utils.js";
 import { AnyThorVGModule } from "./wasm.js";
 
-/**
- * Path command types for building paths
- */
 export const PathCommand = {
   Close: 0,
   MoveTo: 1,
@@ -14,9 +11,6 @@ export const PathCommand = {
 
 export type PathCommandType = (typeof PathCommand)[keyof typeof PathCommand];
 
-/**
- * Fill rule determines how the interior of a shape is determined
- */
 export const FillRule = {
   NonZero: 0,
   EvenOdd: 1,
@@ -24,31 +18,22 @@ export const FillRule = {
 
 export type FillRuleType = (typeof FillRule)[keyof typeof FillRule];
 
-/**
- * Stroke cap style for open path ends
- */
 export const StrokeCap = {
-  Butt: 0, // Stroke ends exactly at the path end
-  Round: 1, // Stroke extends with a rounded cap
-  Square: 2, // Stroke extends with a square cap
+  Butt: 0,
+  Round: 1,
+  Square: 2,
 } as const;
 
 export type StrokeCapType = (typeof StrokeCap)[keyof typeof StrokeCap];
 
-/**
- * Stroke join style for path corners
- */
 export const StrokeJoin = {
-  Bevel: 0, // Beveled corner
-  Round: 1, // Rounded corner
-  Miter: 2, // Sharp corner (limited by miter limit)
+  Bevel: 0,
+  Round: 1,
+  Miter: 2,
 } as const;
 
 export type StrokeJoinType = (typeof StrokeJoin)[keyof typeof StrokeJoin];
 
-/**
- * A point in 2D space
- */
 export interface Point {
   x: number;
   y: number;
