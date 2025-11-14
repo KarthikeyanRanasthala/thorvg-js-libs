@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd ../.. && pnpm --filter docs build",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs"
+}
+

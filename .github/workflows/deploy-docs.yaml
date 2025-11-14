@@ -1,7 +1,7 @@
 name: Vercel Production Deployment
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DEMO_PROJECT_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
 on:
   push:
     branches:
@@ -32,13 +32,13 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        working-directory: apps/demo
+        working-directory: apps/docs
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build Demo App
-        working-directory: apps/demo
+      - name: Build Docs App
+        working-directory: apps/docs
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
-        working-directory: apps/demo
+        working-directory: apps/docs
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
