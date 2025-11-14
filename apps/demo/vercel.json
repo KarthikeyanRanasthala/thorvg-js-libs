@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm --filter demo build",
-  "outputDirectory": "dist",
-  "installCommand": "cd ../.. && pnpm install"
-}
-
