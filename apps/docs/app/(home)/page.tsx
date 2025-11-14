@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { RotatingRectangles } from "@/components/RotatingRectangles";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 export default function HomePage() {
   return (
@@ -12,7 +14,12 @@ export default function HomePage() {
         </p>
         <Link
           href="/docs"
-          className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-6 py-3 text-sm font-medium hover:bg-primary/90 transition-colors"
+          className={cn(
+            buttonVariants({
+              color: "primary",
+              className: "px-6 py-3",
+            })
+          )}
         >
           View Documentation
         </Link>

@@ -96,6 +96,9 @@ importers:
 
   apps/docs:
     dependencies:
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
       fumadocs-core:
         specifier: 16.0.11
         version: 16.0.11(@types/react@19.2.2)(lucide-react@0.552.0(react@19.2.0))(next@16.0.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -123,6 +126,9 @@ importers:
       react-thorvg-fiber:
         specifier: workspace:*
         version: link:../../packages/fiber
+      tailwind-merge:
+        specifier: ^3.3.1
+        version: 3.4.0
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.16
