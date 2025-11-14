@@ -1,10 +1,10 @@
 import _SwModuleFactory, {
   type MainModule as SwModule,
-} from "../wasm/thorvg-sw.js";
+} from "../wasm/thorvg-sw-web.js";
 
 import _GlModuleFactory, {
   type MainModule as _GlModule,
-} from "../wasm/thorvg-gl.js";
+} from "../wasm/thorvg-gl-web.js";
 
 interface GlModule extends _GlModule {
   _tvg_webgl_create_context: (selector: string) => number;

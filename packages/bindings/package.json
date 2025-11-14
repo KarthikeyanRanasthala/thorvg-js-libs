@@ -9,10 +9,11 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/bindings.js"
+      "node": "./dist/bindings-node.js",
+      "default": "./dist/bindings-web.js"
     }
   },
-  "module": "./dist/bindings.js",
+  "module": "./dist/bindings-web.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite dev",

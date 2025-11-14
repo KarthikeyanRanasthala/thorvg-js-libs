@@ -6,29 +6,45 @@ export default defineConfig({
   build: {
     lib: {
       entry: "./src/index.ts",
-      formats: ["es"],
     },
     minify: false,
     rollupOptions: {
-      external: (id) => {
-        return (
-          id.endsWith("/wasm/thorvg-sw.js") ||
-          id.endsWith("/wasm/thorvg-gl.js")
-        );
-      },
-      output: {
-        paths: (id) => {
-          if (id.endsWith("/wasm/thorvg-sw.js")) {
-            return "./thorvg-sw-loader.js";
-          }
+      external: (id) =>
+        id.endsWith("/wasm/thorvg-sw-web.js") ||
+        id.endsWith("/wasm/thorvg-sw-node.js") ||
+        id.endsWith("/wasm/thorvg-gl-web.js"),
+      output: [
+        {
+          entryFileNames: "bindings-web.js",
+          format: "es",
+          paths: (id) => {
+            if (id.endsWith("/wasm/thorvg-sw-web.js")) {
+              return "./thorvg-sw-web-loader.js";
+            }
 
-          if (id.endsWith("/wasm/thorvg-gl.js")) {
-            return "./thorvg-gl-loader.js";
-          }
+            if (id.endsWith("/wasm/thorvg-gl-web.js")) {
+              return "./thorvg-gl-web-loader.js";
+            }
 
-          return id;
+            return id;
+          },
         },
-      },
+        {
+          entryFileNames: "bindings-node.js",
+          format: "es",
+          paths: (id) => {
+            if (id.endsWith("/wasm/thorvg-sw-web.js")) {
+              return "./thorvg-sw-node-loader.js";
+            }
+
+            if (id.endsWith("/wasm/thorvg-gl-web.js")) {
+              return "./thorvg-gl-node-loader.js";
+            }
+
+            return id;
+          },
+        },
+      ],
     },
   },
   plugins: [
@@ -38,9 +54,11 @@ export default defineConfig({
     {
       name: "copy-wasm",
       closeBundle() {
-        copyFileSync("wasm/thorvg-sw.js", "dist/thorvg-sw-loader.js");
+        copyFileSync("wasm/thorvg-sw-web.js", "dist/thorvg-sw-web-loader.js");
+        copyFileSync("wasm/thorvg-sw-node.js", "dist/thorvg-sw-node-loader.js");
+        copyFileSync("wasm/thorvg-gl-web.js", "dist/thorvg-gl-web-loader.js");
+        copyFileSync("wasm/thorvg-gl-node.js", "dist/thorvg-gl-node-loader.js");
         copyFileSync("wasm/thorvg-sw.wasm", "dist/thorvg-sw.wasm");
-        copyFileSync("wasm/thorvg-gl.js", "dist/thorvg-gl-loader.js");
         copyFileSync("wasm/thorvg-gl.wasm", "dist/thorvg-gl.wasm");
       },
     },

@@ -1,101 +1,82 @@
 #!/bin/bash
 set -e
 
-# Configuration
-TEMP_DIR="temp"
-SOURCE_DIR="${TEMP_DIR}/thorvg-source"
-
-# Change working directory
 cd "$(dirname "$(dirname "$0")")"
 
-# Auto-detect EMSDK if not provided
-if [ -z "$1" ] && [ -z "$EMSDK" ]; then
-    EMCC_PATH=$(which emcc 2>/dev/null)
-    if [ -n "$EMCC_PATH" ]; then
-        echo "Auto-detected emcc at: $EMCC_PATH"
-        EMCC_DIR=$(dirname "$EMCC_PATH")
-        EMSDK=$(dirname "$EMCC_DIR")
-    fi
-fi
+temp_dir="temp"
+wasm_dest_dir="wasm"
+thorvg_source_dir="${temp_dir}/thorvg-source"
+thorvg_patch_file="patches/wasm-meson-optional-lottie.patch"
+cross_file_template="cross-wasm.ini"
 
-EMSDK=${EMSDK:-$1}
-
-if [ -z "$EMSDK" ]; then
-    echo "Error: EMSDK path not set and emcc not found"
-    echo "Usage: ./build-wasm.sh [/path/to/emsdk]"
-    echo "Or set EMSDK environment variable"
-    exit 1
-fi
-
-echo "Using EMSDK: ${EMSDK}"
-
-# Generate cross-compilation file with actual EMSDK path
-echo "Generating cross-compilation file..."
-CROSS_FILE_TEMPLATE="cross-wasm.ini"
-CROSS_FILE_GENERATED="${TEMP_DIR}/cross-wasm-generated.ini"
-
-# Create temp directory if it doesn't exist
-mkdir -p "${TEMP_DIR}"
-
-# Replace EMSDK placeholder with actual path
-sed "s|EMSDK|${EMSDK}|g" "${CROSS_FILE_TEMPLATE}" > "${CROSS_FILE_GENERATED}"
-
-echo "Generated cross-compilation file at: ${CROSS_FILE_GENERATED}"
-
-# Check if source directory exists
-if [ ! -d "${SOURCE_DIR}" ]; then
-    echo "Error: Source directory not found at ${SOURCE_DIR}"
+if [ ! -d "${thorvg_source_dir}" ]; then
+    echo "Error: ThorVG source directory not found at ${thorvg_source_dir}"
     echo "Please run ./scripts/fetch-source.sh first"
     exit 1
 fi
 
-# Apply patches to ThorVG source
-echo "Applying patches to ThorVG source..."
-PATCH_FILE="patches/wasm-meson-optional-lottie.patch"
-if [ -f "${PATCH_FILE}" ]; then
-    cd "${SOURCE_DIR}"
-    # Check if patch can be applied (returns 0 if successful, non-zero if already applied or failed)
-    if patch -p1 --forward --dry-run < "../../${PATCH_FILE}" > /dev/null 2>&1; then
-        patch -p1 --forward < "../../${PATCH_FILE}"
-        echo "Applied patch: ${PATCH_FILE}"
+if [ -z "$EMSDK" ]; then
+    echo "Warning: EMSDK environment variable not set, trying to auto-detect..."
+    emcc_path=$(which emcc 2>/dev/null)
+    if [ -n "$emcc_path" ]; then
+        emcc_dir=$(dirname "$emcc_path")
+        emsdk=$(dirname "$emcc_dir")
+        echo "Auto-detected EMSDK at ${emsdk}"
     else
-        echo "Patch already applied or cannot be applied: ${PATCH_FILE}"
+        echo "Error: EMSDK not found"
+        exit 1
     fi
+fi
+
+if [ -d "${wasm_dest_dir}" ]; then
+    rm -rf "${wasm_dest_dir}"
+fi
+
+mkdir -p "${wasm_dest_dir}"
+
+{
+    cd "${thorvg_source_dir}"
+
+    if patch -p1 --forward --dry-run < "../../${thorvg_patch_file}" > /dev/null 2>&1; then
+        patch -p1 --forward < "../../${thorvg_patch_file}" > /dev/null
+        echo "Applied patch: ${thorvg_patch_file}"
+    else
+        echo "Patch already applied or cannot be applied"
+    fi
+
     cd - > /dev/null
-else
-    echo "Warning: ${PATCH_FILE} not found, skipping patches"
-fi
+}
 
-# Output directory
-OUTPUT_DIR="wasm"
+generate_cross_file() {
+    local environment=$1
 
-# Clear output directory
-if [ -d "${OUTPUT_DIR}" ]; then
-    echo "Clearing existing output directory at ${OUTPUT_DIR}..."
-    rm -rf "${OUTPUT_DIR}"
-fi
-mkdir -p "${OUTPUT_DIR}"
+    cross_file="${temp_dir}/cross-wasm-${environment}.ini"
 
-# Function to build for specific engine configuration
-build_engine() {
-    local engine_name=$1
-    local engine_config=$2
-    local build_dir="${TEMP_DIR}/build-${engine_name}"
+    sed -e "s|ENVIRONMENT_PLACEHOLDER|${environment}|g" \
+    -e "s|EMSDK|${emsdk}|g" \
+    "${cross_file_template}" > "${cross_file}"
 
-    echo "========================================="
-    echo "Building ThorVG WASM with engines: ${engine_config}"
-    echo "========================================="
+    echo "Cross file generated at ${cross_file}"
+}
 
-    # Clear existing build directory for this configuration
-    if [ -d "${build_dir}" ]; then
-        echo "Clearing existing build directory at ${build_dir}..."
-        rm -rf "${build_dir}"
-    fi
+build() {
+    local engine=$1
+    local environment=$2
 
-    # Setup Meson build
-    echo "Setting up Meson build for ${engine_name}..."
-    meson setup "${build_dir}" "${SOURCE_DIR}" \
-        --cross-file="${CROSS_FILE_GENERATED}" \
+    echo "Building ${engine} engine for ${environment} environment"
+
+    generate_cross_file "${environment}"
+
+    local build_dir="${temp_dir}/build-${engine}-${environment}"
+
+    rm -rf "${build_dir}"
+
+    echo "Setting up Meson build"
+
+    echo "Cross file: ${cross_file}"
+
+    meson setup "${build_dir}" "${thorvg_source_dir}" \
+        --cross-file="${cross_file}" \
         --buildtype=release \
         -Db_lto=true \
         -Ddefault_library=static \
@@ -105,30 +86,24 @@ build_engine() {
         -Dthreads=false \
         -Dbindings="capi,wasm_beta" \
         -Dpartial=false \
-        -Dengines="${engine_config}" \
+        -Dengines="${engine}" \
         -Dfile="false" \
         -Dextra=""
-    echo "Meson setup complete for ${engine_name}"
 
-    # Compile ThorVG
-    echo "Building ThorVG WASM for ${engine_name}..."
+    echo "Building ThorVG"
+
     ninja -C "${build_dir}"
 
-    # Copy WASM files to output directory with engine-specific names
-    local suffix="-${engine_name}"
+    echo "${engine} engine built successfully for ${environment} environment"
 
-    echo "Copying WASM files for ${engine_name} to ${OUTPUT_DIR}/"
-    cp "${build_dir}/src/bindings/wasm/thorvg.js" "${OUTPUT_DIR}/thorvg${suffix}.js"
-    cp "${build_dir}/src/bindings/wasm/thorvg.wasm" "${OUTPUT_DIR}/thorvg${suffix}.wasm"
-    cp "${build_dir}/src/bindings/wasm/thorvg.d.ts" "${OUTPUT_DIR}/thorvg${suffix}.d.ts" 2>/dev/null || echo "TypeScript definitions not found for ${engine_name} (expected with --emit-tsd)"
+    cp "${build_dir}/src/bindings/wasm/thorvg.js" "${wasm_dest_dir}/thorvg-${engine}-${environment}.js"
+    cp "${build_dir}/src/bindings/wasm/thorvg.d.ts" "${wasm_dest_dir}/thorvg-${engine}-${environment}.d.ts"
+    cp "${build_dir}/src/bindings/wasm/thorvg.wasm" "${wasm_dest_dir}/thorvg-${engine}.wasm"
+
+    echo "Copied files to ${wasm_dest_dir}"
 }
 
-# Build both engine configurations
-build_engine "sw" "sw"
-build_engine "gl" "gl"
-
-echo "========================================="
-echo "All builds complete! WASM files are in ${OUTPUT_DIR}/"
-echo "========================================="
-ls -lh "${OUTPUT_DIR}"/*.{js,wasm} 2>/dev/null || echo "WASM bindings not found"
-
+build "sw" "web"
+build "sw" "node"
+build "gl" "web"
+build "gl" "node"
