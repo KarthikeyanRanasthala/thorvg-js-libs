@@ -16,15 +16,15 @@ export default defineConfig({
         id.includes("react-reconciler") ||
         id.includes("react") ||
         id.includes("react/jsx-runtime") ||
-        id.endsWith("/thorvg-sw-loader.js") ||
-        id.endsWith("/thorvg-gl-loader.js"),
+        id.endsWith("/thorvg-sw-web-loader.js") ||
+        id.endsWith("/thorvg-gl-web-loader.js"),
       output: {
         paths: (id) => {
-          if (id.endsWith("/thorvg-sw-loader.js")) {
-            return "./thorvg-sw-loader.js";
+          if (id.endsWith("/thorvg-sw-web-loader.js")) {
+            return "./thorvg-sw-web-loader.js";
           }
-          if (id.endsWith("/thorvg-gl-loader.js")) {
-            return "./thorvg-gl-loader.js";
+          if (id.endsWith("/thorvg-gl-web-loader.js")) {
+            return "./thorvg-gl-web-loader.js";
           }
           return id;
         },
@@ -39,12 +39,12 @@ export default defineConfig({
       name: "copy-wasm",
       closeBundle() {
         copyFileSync(
-          "../bindings/dist/thorvg-sw-loader.js",
-          "dist/thorvg-sw-loader.js"
+          "../bindings/dist/thorvg-sw-web-loader.js",
+          "dist/thorvg-sw-web-loader.js"
         );
         copyFileSync(
-          "../bindings/dist/thorvg-gl-loader.js",
-          "dist/thorvg-gl-loader.js"
+          "../bindings/dist/thorvg-gl-web-loader.js",
+          "dist/thorvg-gl-web-loader.js"
         );
         copyFileSync("../bindings/dist/thorvg-sw.wasm", "dist/thorvg-sw.wasm");
         copyFileSync("../bindings/dist/thorvg-gl.wasm", "dist/thorvg-gl.wasm");
