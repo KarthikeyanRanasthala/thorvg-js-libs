@@ -1,5 +1,12 @@
 # demo
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [e4a2282]
+  - react-thorvg-fiber@0.3.0
+
 ## 0.0.2
 
 ### Patch Changes

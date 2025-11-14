@@ -1,5 +1,11 @@
 # react-thorvg-fiber
 
+## 0.3.0
+
+### Minor Changes
+
+- e4a2282: feat: shape, path, fillrule and stroke options
+
 ## 0.2.0
 
 ### Minor Changes
